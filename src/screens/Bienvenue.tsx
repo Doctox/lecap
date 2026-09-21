@@ -29,14 +29,27 @@ export default function Bienvenue({ userId, pseudoExistant, onPret, enAttente }:
 
   async function enregistrerPseudo() {
     const propre = pseudo.trim()
-    if (propre.length < 1) return
+    // Deux caractères au minimum, comme la contrainte en base : mieux vaut un
+    // bouton inactif qu'une erreur renvoyée par le serveur.
+    if (propre.length < 2) return
     setOccupe(true)
     setErreur(null)
     const { error } = await supabase
       .from('profiles')
       .upsert({ id: userId, pseudo: propre })
     setOccupe(false)
-    if (error) return setErreur("Le pseudo n'a pas pu être enregistré.")
+
+    if (error) {
+      // 23503 : la clé étrangère vers auth.users a sauté. Le jeton du navigateur
+      // est encore valide, mais le compte qu'il désigne n'existe plus — il a été
+      // supprimé côté serveur. Rester connecté ne mène nulle part : on sort.
+      if (error.code === '23503') {
+        setErreur('Ta session a expiré. On te reconnecte…')
+        await supabase.auth.signOut()
+        return
+      }
+      return setErreur("Le pseudo n'a pas pu être enregistré.")
+    }
     setEtape('accord')
   }
 
@@ -71,7 +84,13 @@ export default function Bienvenue({ userId, pseudoExistant, onPret, enAttente }:
 
   return (
     <div className="ecran">
-      <Entete />
+      <Entete
+        actions={
+          <button className="fantome" onClick={() => supabase.auth.signOut()}>
+            Changer de compte
+          </button>
+        }
+      />
 
       {erreur && <div className="avis">{erreur}</div>}
 
@@ -82,6 +101,7 @@ export default function Bienvenue({ userId, pseudoExistant, onPret, enAttente }:
             Un pseudo suffit. Ton binôme est la seule personne qui le verra —
             il n'y a ni annuaire, ni classement, ni profil public.
           </p>
+          <p className="faible">De deux à vingt-quatre caractères.</p>
           <div className="champ">
             <input
               value={pseudo}
@@ -94,7 +114,7 @@ export default function Bienvenue({ userId, pseudoExistant, onPret, enAttente }:
           <button
             className="principal"
             onClick={enregistrerPseudo}
-            disabled={occupe || pseudo.trim().length === 0}
+            disabled={occupe || pseudo.trim().length < 2}
           >
             Continuer
           </button>
