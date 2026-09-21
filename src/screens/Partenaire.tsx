@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { Entete } from '../components/Entete'
 import { Blason } from '../components/Blason'
-import type { Bonus, Day, Pact, Progress, Reward, Situation, Tier } from '../lib/types'
+import { Journal } from '../components/Journal'
+import type { Bonus, Day, Pact, Progress, Reward, Situation, Tier, TierEvent } from '../lib/types'
 
 // Le seul écran qui a le droit de lire rewards. Côté joueur, la même requête
 // renverrait une liste vide — c'est la base qui le garantit, pas cet écran.
@@ -14,28 +15,34 @@ export default function Partenaire({ pact, onQuitter }: Props) {
   const [bareme, setBareme] = useState<Situation[]>([])
   const [paliers, setPaliers] = useState<Tier[]>([])
   const [aValider, setAValider] = useState<Day[]>([])
-  const [mots, setMots] = useState<Day[]>([])
+  const [jours, setJours] = useState<Day[]>([])
+  const [bonus, setBonus] = useState<Bonus[]>([])
+  const [coffresOuverts, setCoffresOuverts] = useState<TierEvent[]>([])
   const [coffres, setCoffres] = useState<Reward[]>([])
   const [bonusCaches, setBonusCaches] = useState<Bonus[]>([])
   const [chargement, setChargement] = useState(true)
 
   const charger = useCallback(async () => {
-    const [p, s, t, j, r, b] = await Promise.all([
+    const [p, s, t, j, r, b, ev] = await Promise.all([
       supabase.rpc('progress', { p: pact.id }).single(),
       supabase.from('situation_scale').select('*').order('rank'),
       supabase.from('tiers').select('*').eq('pact_id', pact.id).order('points'),
       supabase.from('days').select('*').eq('pact_id', pact.id).order('day', { ascending: false }).limit(30),
       supabase.from('rewards').select('*').eq('pact_id', pact.id),
-      supabase.from('bonuses').select('*').eq('pact_id', pact.id).is('revealed_at', null),
+      supabase.from('bonuses').select('*').eq('pact_id', pact.id).order('created_at', { ascending: false }),
+      supabase.from('tier_events').select('*').eq('pact_id', pact.id).order('tier_level'),
     ])
     const jours = (j.data as Day[]) ?? []
     setProgres((p.data as Progress) ?? null)
     setBareme((s.data as Situation[]) ?? [])
     setPaliers((t.data as Tier[]) ?? [])
     setAValider(jours.filter((d) => !d.validated_at))
-    setMots(jours.filter((d) => d.note))
+    setJours(jours)
     setCoffres((r.data as Reward[]) ?? [])
-    setBonusCaches((b.data as Bonus[]) ?? [])
+    const tousLesBonus = (b.data as Bonus[]) ?? []
+    setBonus(tousLesBonus)
+    setBonusCaches(tousLesBonus.filter((x) => !x.revealed_at))
+    setCoffresOuverts((ev.data as TierEvent[]) ?? [])
     setChargement(false)
   }, [pact.id])
 
@@ -46,8 +53,8 @@ export default function Partenaire({ pact, onQuitter }: Props) {
   if (chargement) return <div className="ecran doux">Un instant…</div>
 
   const xp = progres?.total ?? 0
-  const prochain = progres?.next_tier ?? null
-  const coffrePret = prochain ? coffres.some((c) => c.tier_points === prochain) : true
+  const prochain = progres?.next_tier_level ?? null
+  const coffrePret = prochain ? coffres.some((c) => c.tier_level === prochain) : true
 
   return (
     <div className="ecran">
@@ -69,8 +76,8 @@ export default function Partenaire({ pact, onQuitter }: Props) {
 
       {prochain && !coffrePret && (
         <div className="avis">
-          Il est à {xp} XP, le palier {prochain} approche — as-tu prévu quelque
-          chose&nbsp;?
+          Il est niveau {progres?.level ?? 1}, à {xp} XP. Le coffre du niveau{' '}
+          {prochain} approche — as-tu prévu quelque chose&nbsp;?
         </div>
       )}
 
@@ -87,19 +94,14 @@ export default function Partenaire({ pact, onQuitter }: Props) {
 
       <Coffres pact={pact} paliers={paliers} coffres={coffres} onFait={charger} />
 
-      {mots.length > 0 && (
-        <div className="carte">
-          <h2>Ce qu'il a écrit</h2>
-          {mots.slice(0, 8).map((j) => (
-            <p key={j.id} className="doux" style={{ fontStyle: 'italic' }}>
-              <span className="faible" style={{ fontStyle: 'normal' }}>
-                {new Date(j.day).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })} —{' '}
-              </span>
-              « {j.note} »
-            </p>
-          ))}
-        </div>
-      )}
+      <Journal
+        jours={jours}
+        bonus={bonus}
+        bareme={bareme}
+        paliers={paliers}
+        coffres={coffresOuverts}
+        avecMots
+      />
     </div>
   )
 }
@@ -160,7 +162,7 @@ function Arbitrage({
           })}
         </b>
         <span className="faible">
-          {jour.status === 'zero' ? 'Journée à zéro' : 'Journée avec un verre'}
+          {jour.status === 'zero' ? 'Journée à zéro' : 'Journée avec'}
         </span>
       </div>
 
@@ -329,16 +331,21 @@ function Coffres({
   const [brouillons, setBrouillons] = useState<Record<number, string>>({})
   const [occupe, setOccupe] = useState<number | null>(null)
 
-  async function enregistrer(points: number) {
-    const contenu = (brouillons[points] ?? '').trim()
+  async function enregistrer(niveau: number) {
+    const contenu = (brouillons[niveau] ?? '').trim()
     if (!contenu) return
-    setOccupe(points)
-    await supabase
-      .from('rewards')
-      .upsert({ pact_id: pact.id, tier_points: points, content: contenu, updated_at: new Date().toISOString() },
-        { onConflict: 'pact_id,tier_points' })
+    setOccupe(niveau)
+    await supabase.from('rewards').upsert(
+      {
+        pact_id: pact.id,
+        tier_level: niveau,
+        content: contenu,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'pact_id,tier_level' },
+    )
     setOccupe(null)
-    setBrouillons((b) => ({ ...b, [points]: '' }))
+    setBrouillons((b) => ({ ...b, [niveau]: '' }))
     onFait()
   }
 
@@ -351,16 +358,16 @@ function Coffres({
       </p>
 
       {paliers.map((t) => {
-        const existant = coffres.find((c) => c.tier_points === t.points)
-        const enEdition = brouillons[t.points] !== undefined && brouillons[t.points] !== ''
+        const existant = coffres.find((c) => c.tier_level === t.level)
+        const enEdition = brouillons[t.level] !== undefined && brouillons[t.level] !== ''
         return (
           <div
-            key={t.points}
+            key={t.level}
             style={{ borderTop: '1px solid var(--bord)', paddingTop: 12, marginTop: 12 }}
           >
             <div className="rangee" style={{ justifyContent: 'space-between' }}>
               <b style={{ color: 'var(--or)' }}>
-                {t.points} XP — {t.label}
+                Niveau {t.level} — {t.label}
               </b>
             </div>
             {existant && !enEdition ? (
@@ -368,7 +375,7 @@ function Coffres({
                 {existant.content}{' '}
                 <button
                   className="fantome"
-                  onClick={() => setBrouillons((b) => ({ ...b, [t.points]: existant.content }))}
+                  onClick={() => setBrouillons((b) => ({ ...b, [t.level]: existant.content }))}
                 >
                   modifier
                 </button>
@@ -377,17 +384,17 @@ function Coffres({
               <>
                 <div className="champ" style={{ marginTop: 8, marginBottom: 8 }}>
                   <input
-                    value={brouillons[t.points] ?? ''}
+                    value={brouillons[t.level] ?? ''}
                     onChange={(e) =>
-                      setBrouillons((b) => ({ ...b, [t.points]: e.target.value.slice(0, 1000) }))
+                      setBrouillons((b) => ({ ...b, [t.level]: e.target.value.slice(0, 1000) }))
                     }
                     placeholder={existant ? existant.content : 'Ce que tu lui prépares…'}
                   />
                 </div>
                 <button
                   className="discret"
-                  onClick={() => enregistrer(t.points)}
-                  disabled={occupe === t.points || !(brouillons[t.points] ?? '').trim()}
+                  onClick={() => enregistrer(t.level)}
+                  disabled={occupe === t.level || !(brouillons[t.level] ?? '').trim()}
                 >
                   Enregistrer
                 </button>

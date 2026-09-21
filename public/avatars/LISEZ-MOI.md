@@ -6,18 +6,18 @@ réutilise le portrait 12.
 
 | Fichier | Rang | Niveau |
 |---|---|---|
-| `rang-01.png` | Mousse | 1 |
-| `rang-02.png` | Matelot | 2 |
-| `rang-03.png` | Gabier | 3 |
-| `rang-04.png` | Timonier | 4 |
-| `rang-05.png` | Navigateur | 5 |
-| `rang-06.png` | Quartier-maître | 6 |
-| `rang-07.png` | Second | 7 |
-| `rang-08.png` | Capitaine | 8 |
-| `rang-09.png` | Cap-hornier | 9 |
-| `rang-10.png` | Doubleur de caps | 10 |
-| `rang-11.png` | Maître à bord | 11 |
-| `rang-12.png` | Grand Cap | 12 et au-delà |
+| `rang-01.webp` | Mousse | 1 |
+| `rang-02.webp` | Matelot | 2 |
+| `rang-03.webp` | Gabier | 3 |
+| `rang-04.webp` | Timonier | 4 |
+| `rang-05.webp` | Navigateur | 5 |
+| `rang-06.webp` | Quartier-maître | 6 |
+| `rang-07.webp` | Second | 7 |
+| `rang-08.webp` | Capitaine | 8 |
+| `rang-09.webp` | Cap-hornier | 9 |
+| `rang-10.webp` | Doubleur de caps | 10 |
+| `rang-11.webp` | Maître à bord | 11 |
+| `rang-12.webp` | Grand Cap | 12 et au-delà |
 
 ## Ce que doit être une image
 

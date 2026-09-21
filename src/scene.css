@@ -1,0 +1,557 @@
+/* Le Cap — la scène.
+ *
+ * L'écran joueur cesse d'être un document qui défile : un décor en haut, une
+ * boîte de dialogue, un menu d'actions en grille, des onglets en bas. C'est la
+ * grammaire d'un jeu, pas celle d'un formulaire.
+ *
+ * Rien de punitif ici non plus : la scène célèbre, elle ne sanctionne pas.
+ */
+
+.jeu {
+  max-width: 540px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
+}
+
+/* ----------------------------------------------------------- le décor */
+
+.scene {
+  position: relative;
+  overflow: hidden;
+  padding: 14px 16px 18px;
+  background:
+    radial-gradient(120% 70% at 50% 0%, #2a7f96 0%, #12495c 45%, transparent 72%),
+    linear-gradient(180deg, #0e4256 0%, #0a3040 58%, #062029 100%);
+  border-bottom: 3px solid var(--or-sombre);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* L'horizon : une bande d'eau plus claire, et ses rides. */
+.scene::before {
+  content: '';
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: 0;
+  height: 42%;
+  background:
+    repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.045) 0 2px, transparent 2px 9px),
+    linear-gradient(180deg, rgba(63, 192, 204, 0.2), transparent 70%);
+  pointer-events: none;
+}
+
+.scene-haut {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+/* Le portrait, en grand, dans son cadre de laiton. */
+.portrait-scene {
+  position: relative;
+  flex: 0 0 112px;
+  width: 112px;
+  height: 112px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 3px solid var(--or-sombre);
+  background: radial-gradient(circle at 50% 30%, #1a5a70, #071f28);
+  box-shadow:
+    inset 0 2px 0 rgba(248, 210, 129, 0.3),
+    0 8px 20px rgba(0, 0, 0, 0.5);
+}
+
+.portrait-scene img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.portrait-scene .niveau-plaque {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 3px 0;
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  color: #2e1f06;
+  background: linear-gradient(180deg, var(--or-clair), var(--or-sombre));
+}
+
+/* ------------------------------------------- l'ardoise de statistiques */
+
+.ardoise {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 2px solid var(--or-sombre);
+  background: linear-gradient(180deg, rgba(6, 32, 41, 0.92), rgba(4, 22, 29, 0.92));
+  box-shadow: inset 0 1px 0 rgba(248, 210, 129, 0.22);
+}
+
+.ardoise .nom {
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--encre);
+}
+
+.ardoise .rang-texte {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--or);
+}
+
+.ligne-xp {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.ligne-xp .etiquette {
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: var(--azur);
+}
+
+.jauge-hud {
+  flex: 1;
+  height: 9px;
+  border-radius: 999px;
+  background: #02161d;
+  border: 1px solid #0d3a48;
+  overflow: hidden;
+}
+
+.jauge-hud > i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(180deg, #7ee6f0, var(--azur) 60%, var(--azur-sombre));
+  transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ardoise .compte {
+  margin: 6px 0 0;
+  font-size: 0.74rem;
+  color: var(--encre-faible);
+  font-variant-numeric: tabular-nums;
+}
+
+.ardoise .compte b {
+  color: var(--or);
+}
+
+/* ------------------------------------------------- la boîte de dialogue */
+
+.dialogue {
+  position: relative;
+  margin-top: 14px;
+  padding: 13px 16px 16px;
+  border-radius: 12px;
+  border: 3px solid var(--or-sombre);
+  background: linear-gradient(180deg, #0a2f3c, #061f28);
+  box-shadow:
+    inset 0 0 0 2px rgba(6, 32, 41, 0.9),
+    inset 0 2px 0 rgba(248, 210, 129, 0.2),
+    0 6px 16px rgba(0, 0, 0, 0.45);
+  font-size: 0.94rem;
+  line-height: 1.5;
+  color: var(--encre);
+}
+
+.dialogue p {
+  margin: 0;
+}
+
+.dialogue b {
+  color: var(--or);
+}
+
+/* Le chevron clignotant du bas de boîte. */
+.dialogue::after {
+  content: '\25BE';
+  position: absolute;
+  right: 12px;
+  bottom: 3px;
+  font-size: 0.8rem;
+  color: var(--or);
+  animation: clignote 1.4s steps(2, end) infinite;
+}
+
+@keyframes clignote {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* -------------------------------------------------- les fenêtres de jeu */
+
+.panneau {
+  flex: 1;
+  padding: 22px 16px 16px;
+}
+
+.fenetre {
+  position: relative;
+  margin-bottom: 20px;
+  padding: 20px 15px 15px;
+  border-radius: 14px;
+  border: 3px solid var(--or-sombre);
+  background: linear-gradient(180deg, #0d3a48, #072935);
+  box-shadow:
+    inset 0 0 0 2px rgba(6, 32, 41, 0.85),
+    inset 0 2px 0 rgba(248, 210, 129, 0.18),
+    0 8px 22px rgba(0, 0, 0, 0.4);
+}
+
+/* Le titre à cheval sur la bordure, comme une étiquette clouée. */
+.fenetre > h2 {
+  position: absolute;
+  top: -13px;
+  left: 14px;
+  margin: 0;
+  padding: 3px 12px;
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #2e1f06;
+  background: linear-gradient(180deg, var(--or-clair), var(--or-sombre));
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+/* --------------------------------------- le menu d'actions, en grille */
+
+.menu-quetes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  margin: 6px 0 4px;
+}
+
+.case-quete {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 11px;
+  min-height: 80px;
+  text-align: left;
+  border-radius: 11px;
+  border: 2px solid #17505f;
+  background: linear-gradient(180deg, #0c3543, #06232c);
+  color: var(--encre-doux);
+  font-size: 0.8rem;
+  line-height: 1.25;
+  transition:
+    transform 0.12s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.case-quete[data-cochee='true'] {
+  border-color: var(--azur);
+  color: var(--encre);
+  background: linear-gradient(180deg, #0f4a5a, #093745);
+  box-shadow: 0 0 18px rgba(63, 192, 204, 0.22);
+}
+
+.case-quete:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.case-quete .haut {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+}
+
+.case-quete .val {
+  margin-left: auto;
+  font-size: 0.78rem;
+  font-weight: 900;
+  color: var(--or);
+}
+
+.gemme-mini {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  clip-path: polygon(50% 0, 100% 27%, 100% 73%, 50% 100%, 0 73%, 0 27%);
+  background: linear-gradient(160deg, #6fd6e4, #1b8496);
+  filter: saturate(0.5) brightness(0.68);
+  transition: filter 0.2s ease;
+}
+
+.gemme-mini[data-rarete='rare'] {
+  background: linear-gradient(160deg, #9db4ff, #3b53c4);
+}
+
+.gemme-mini[data-rarete='epique'] {
+  background: linear-gradient(160deg, var(--or-clair), var(--or-sombre));
+}
+
+.case-quete[data-cochee='true'] .gemme-mini {
+  filter: none;
+}
+
+/* ------------------------------------------------- les onglets du bas */
+
+.onglets {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  max-width: 540px;
+  margin: 0 auto;
+  padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, #0a3040, #051a22);
+  border-top: 3px solid var(--or-sombre);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.onglet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 7px 4px 5px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--encre-faible);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.onglet .pictogramme {
+  font-size: 1.15rem;
+  line-height: 1;
+  filter: grayscale(1) opacity(0.55);
+  transition: filter 0.2s ease;
+}
+
+.onglet[aria-selected='true'] {
+  color: var(--or);
+  background: rgba(233, 180, 76, 0.1);
+  box-shadow: inset 0 0 0 1px var(--or-sombre);
+}
+
+.onglet[aria-selected='true'] .pictogramme {
+  filter: none;
+}
+
+.onglet .pastille {
+  position: absolute;
+  top: 2px;
+  right: 14px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  font-size: 0.64rem;
+  font-weight: 900;
+  color: #2e1f06;
+  background: var(--or);
+  display: grid;
+  place-items: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialogue::after {
+    animation: none !important;
+  }
+}
+
+/* ------------------------------- les onglets internes d'une fenêtre */
+
+.onglets-fenetre {
+  display: flex;
+  gap: 6px;
+  margin: 2px 0 14px;
+  padding: 4px;
+  border-radius: 11px;
+  background: #06232c;
+  border: 1px solid #17505f;
+}
+
+.onglet-fenetre {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 6px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--encre-faible);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.onglet-fenetre[aria-selected='true'] {
+  color: #2e1f06;
+  background: linear-gradient(180deg, var(--or-clair), var(--or));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* Le compteur : combien de quêtes cochées, ou un point si un mot est écrit. */
+.onglet-fenetre .compteur {
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  font-size: 0.64rem;
+  font-weight: 900;
+  display: grid;
+  place-items: center;
+  color: #06232c;
+  background: var(--azur);
+}
+
+.onglet-fenetre[aria-selected='true'] .compteur {
+  color: var(--or-clair);
+  background: #3a2708;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LA MANETTE — deux boutons ronds, posés en diagonale comme sur une
+   console : CAP en gros, EXIT en petit. Le geste du jour devient un appui,
+   plus une case à remplir.
+
+   EXIT reste lisible et jamais honteux : il est plus petit parce qu'il
+   sert moins souvent, pas parce qu'il serait honteux.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.manette {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 26px;
+  padding: 10px 0 4px;
+}
+
+.bouton-rond {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: none;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition:
+    transform 0.09s ease,
+    box-shadow 0.09s ease,
+    filter 0.15s ease;
+}
+
+.bouton-rond .sous-rond {
+  position: absolute;
+  top: calc(100% + 7px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: none;
+  color: var(--encre-faible);
+}
+
+/* Le bouton principal : dôme de laiton, bord biseauté, socle épais. */
+.bouton-rond.cap {
+  width: 128px;
+  height: 128px;
+  font-size: 1.7rem;
+  color: #3a2708;
+  background:
+    radial-gradient(circle at 38% 28%, #ffe9b6 0%, var(--or-clair) 26%, var(--or) 58%, #b07c1d 100%);
+  box-shadow:
+    inset 0 3px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -6px 10px rgba(120, 72, 10, 0.5),
+    0 0 0 6px #0a3040,
+    0 0 0 8px var(--or-sombre),
+    0 9px 0 #6b4310,
+    0 16px 30px rgba(0, 0, 0, 0.55);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.bouton-rond.cap:active:not(:disabled) {
+  transform: translateY(7px);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -3px 8px rgba(120, 72, 10, 0.5),
+    0 0 0 6px #0a3040,
+    0 0 0 8px var(--or-sombre),
+    0 2px 0 #6b4310,
+    0 6px 14px rgba(0, 0, 0, 0.5);
+}
+
+/* Le bouton secondaire : ardoise calme, jamais rouge. */
+.bouton-rond.exit {
+  width: 82px;
+  height: 82px;
+  margin-top: 34px;
+  font-size: 0.92rem;
+  color: #dce9ec;
+  background: radial-gradient(circle at 38% 28%, #7e9aa3 0%, #5b7c85 45%, #35505a 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.35),
+    0 0 0 5px #0a3040,
+    0 0 0 6px #2c4954,
+    0 7px 0 #243c45,
+    0 12px 22px rgba(0, 0, 0, 0.5);
+}
+
+.bouton-rond.exit:active:not(:disabled) {
+  transform: translateY(5px);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.35),
+    0 0 0 5px #0a3040,
+    0 0 0 6px #2c4954,
+    0 2px 0 #243c45,
+    0 5px 12px rgba(0, 0, 0, 0.45);
+}
+
+.bouton-rond:disabled {
+  filter: grayscale(0.4) brightness(0.8);
+  cursor: default;
+}
+
+/* De la place sous la manette pour les légendes. */
+.manette + .apres-manette {
+  margin-top: 26px;
+  text-align: center;
+}

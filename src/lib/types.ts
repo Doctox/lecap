@@ -21,7 +21,9 @@ export type Situation = {
 
 export type Tier = {
   pact_id: string
-  points: number
+  /** Le coffre s'ouvre à ce NIVEAU, plus à un total d'XP : la courbe des
+      niveaux est quadratique, elle étale les coffres toute seule. */
+  level: number
   label: string
 }
 
@@ -51,7 +53,7 @@ export type Bonus = {
 export type TierEvent = {
   id: string
   pact_id: string
-  tier_points: number
+  tier_level: number
   reached_at: string
   celebrated_at: string | null
   delivered_at: string | null
@@ -61,7 +63,7 @@ export type TierEvent = {
 export type Reward = {
   id: string
   pact_id: string
-  tier_points: number
+  tier_level: number
   content: string
   updated_at: string
 }
@@ -71,8 +73,11 @@ export type Progress = {
   current_streak: number
   best_streak: number
   zero_days: number
-  next_tier: number | null
+  level: number
+  next_tier_level: number | null
   next_tier_label: string | null
+  /** XP à atteindre pour le prochain coffre, calculé côté base. */
+  next_tier_xp: number | null
 }
 
 /**

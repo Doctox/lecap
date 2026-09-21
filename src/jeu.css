@@ -595,3 +595,61 @@ a.quete-jeu .libelle b {
   object-fit: cover;
   border-radius: 50%;
 }
+
+/* ------------------------------------------------- le journal de bord */
+
+.jour {
+  padding: 13px 14px;
+  border-radius: 13px;
+  border: 1px solid var(--bord);
+  background: linear-gradient(180deg, #0d3846, #072935);
+}
+
+.jour-haut {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.jour-quetes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 0 42px;
+}
+
+/* Un jeton par quête retenue ce jour-là, teinté comme sa gemme. */
+.jeton {
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  border: 1px solid var(--azur-sombre);
+  color: var(--azur);
+  background: rgba(63, 192, 204, 0.09);
+}
+
+.jeton[data-rarete='rare'] {
+  border-color: #3b53c4;
+  color: #9db4ff;
+  background: rgba(107, 130, 226, 0.12);
+}
+
+.jeton[data-rarete='epique'] {
+  border-color: var(--or-sombre);
+  color: var(--or);
+  background: rgba(233, 180, 76, 0.1);
+}
+
+.jour-coffre {
+  margin: 10px 0 0 42px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--or);
+}
+
+.jour-mot {
+  margin: 10px 0 0 42px;
+  font-size: 0.86rem;
+  font-style: italic;
+  color: var(--encre-doux);
+}

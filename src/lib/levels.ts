@@ -81,5 +81,5 @@ export const NOMBRE_DE_RANGS = RANKS.length
  */
 export function avatarPour(level: number): string {
   const rang = Math.min(Math.max(1, level), RANKS.length)
-  return `${import.meta.env.BASE_URL}avatars/rang-${String(rang).padStart(2, '0')}.png`
+  return `${import.meta.env.BASE_URL}avatars/rang-${String(rang).padStart(2, '0')}.webp`
 }

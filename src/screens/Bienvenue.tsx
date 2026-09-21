@@ -40,12 +40,12 @@ export default function Bienvenue({ userId, pseudoExistant, onPret, enAttente }:
     setEtape('accord')
   }
 
-  async function creer(role: 'player' | 'partner') {
+  async function ouvrirLaPartie() {
     setOccupe(true)
     setErreur(null)
-    const { data, error } = await supabase.rpc('create_pact', { as_role: role })
+    const { data, error } = await supabase.rpc('create_pact')
     setOccupe(false)
-    if (error || !data) return setErreur("Le duo n'a pas pu être créé.")
+    if (error || !data) return setErreur("La partie n'a pas pu être ouverte.")
     setCodePartage((data as { join_code: string }).join_code)
     setEtape('partage')
   }
@@ -60,8 +60,10 @@ export default function Bienvenue({ userId, pseudoExistant, onPret, enAttente }:
     if (error) {
       return setErreur(
         error.message.includes('complet')
-          ? 'Ce duo est déjà complet.'
-          : "Ce code ne correspond à aucun duo. Vérifie les six caractères.",
+          ? 'Ce duo a déjà quelqu’un à la barre.'
+          : error.message.includes('le tien')
+            ? 'C’est ton propre code — transmets-le à ton binôme.'
+            : 'Ce code ne correspond à aucune partie. Vérifie les six caractères.',
       )
     }
     onPret()
@@ -165,16 +167,7 @@ export default function Bienvenue({ userId, pseudoExistant, onPret, enAttente }:
               onClick={() => setEtape('role')}
               disabled={!accepte}
             >
-              Créer un duo
-            </button>
-            {/* L'entrée par code vit ici, pas sur l'écran des rôles : quand on
-                rejoint, le rôle est déjà décidé par la place restée libre. */}
-            <button
-              className="discret"
-              onClick={() => setEtape('code')}
-              disabled={!accepte}
-            >
-              On m'a donné un code
+              Continuer
             </button>
           </div>
         </>
@@ -213,22 +206,33 @@ export default function Bienvenue({ userId, pseudoExistant, onPret, enAttente }:
 
           <button
             className="principal"
-            onClick={() => creer('player')}
+            onClick={ouvrirLaPartie}
             disabled={occupe}
             style={{ marginBottom: 10 }}
           >
             Je garde le cap et j'en suis cap
           </button>
-          <button className="discret" onClick={() => creer('partner')} disabled={occupe}>
+          <button
+            className="discret"
+            onClick={() => setEtape('code')}
+            disabled={occupe}
+          >
             Je tiens la barre et j'en suis cap
           </button>
+          <p className="faible" style={{ margin: '12px 0 0' }}>
+            Celui qui garde le cap ouvre la partie et reçoit un code. Celui qui
+            tient la barre le saisit pour le rejoindre.
+          </p>
         </div>
       )}
 
       {etape === 'code' && (
         <div className="carte">
-          <h2>Le code de ton binôme</h2>
-          <p className="doux">Six caractères, transmis par la personne qui a créé le duo.</p>
+          <h2>Prendre la barre</h2>
+          <p className="doux">
+            Six caractères, transmis par la personne qui garde le cap. C'est elle
+            qui ouvre la partie ; toi, tu la rejoins.
+          </p>
           <div className="champ">
             <input
               className="code"
@@ -240,7 +244,7 @@ export default function Bienvenue({ userId, pseudoExistant, onPret, enAttente }:
             />
           </div>
           <button className="principal" onClick={rejoindre} disabled={occupe}>
-            Rejoindre
+            Prendre la barre
           </button>
           <button className="fantome" onClick={() => setEtape('accord')}>
             ← Retour
@@ -250,10 +254,10 @@ export default function Bienvenue({ userId, pseudoExistant, onPret, enAttente }:
 
       {etape === 'partage' && (
         <div className="carte carte-or">
-          <h2>Ton duo est ouvert</h2>
+          <h2>Ta partie est ouverte</h2>
           <p className="doux">
-            Transmets ce code à ton binôme. Il lui suffit de se connecter et de
-            le saisir — la partie commence à deux.
+            Transmets ce code à la personne qui tiendra la barre. Elle se
+            connecte, la saisit, et vous êtes deux.
           </p>
           <div className="code" style={{ padding: '18px 0', color: 'var(--or)' }}>
             {codePartage}

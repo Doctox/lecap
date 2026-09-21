@@ -36,7 +36,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,webp,woff2}'],
         // Aucune donnée de jeu en cache : la coquille seulement.
         navigateFallback: '/lecap/index.html',
         runtimeCaching: [],
