@@ -1,50 +1,53 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { Entete } from '../components/Entete'
-import { Blason } from '../components/Blason'
 import { Journal } from '../components/Journal'
+import { avatarPour, levelFromXp, rankLabel } from '../lib/levels'
 import type { Bonus, Day, Pact, Progress, Reward, Situation, Tier, TierEvent } from '../lib/types'
 
-// Le seul écran qui a le droit de lire rewards. Côté joueur, la même requête
-// renverrait une liste vide — c'est la base qui le garantit, pas cet écran.
+// Le poste de commandement : même grammaire que la scène du joueur, mais c'est
+// LUI qu'on regarde. Pas de fête plein écran ici — la célébration appartient à
+// celui qui avance ; elle, elle la déclenche.
+//
+// C'est le seul écran de l'application autorisé à lire la table rewards. Côté
+// joueur, la même requête renverrait une liste vide : c'est la base qui le
+// garantit, pas cet écran.
 
 type Props = { pact: Pact; onQuitter: () => void }
+type NomOnglet = 'valider' | 'coffres' | 'journal'
 
 export default function Partenaire({ pact, onQuitter }: Props) {
   const [progres, setProgres] = useState<Progress | null>(null)
   const [bareme, setBareme] = useState<Situation[]>([])
   const [paliers, setPaliers] = useState<Tier[]>([])
-  const [aValider, setAValider] = useState<Day[]>([])
   const [jours, setJours] = useState<Day[]>([])
   const [bonus, setBonus] = useState<Bonus[]>([])
-  const [coffresOuverts, setCoffresOuverts] = useState<TierEvent[]>([])
-  const [coffres, setCoffres] = useState<Reward[]>([])
-  const [bonusCaches, setBonusCaches] = useState<Bonus[]>([])
+  const [recompenses, setRecompenses] = useState<Reward[]>([])
+  const [evenements, setEvenements] = useState<TierEvent[]>([])
+  const [pseudoJoueur, setPseudoJoueur] = useState<string | null>(null)
   const [chargement, setChargement] = useState(true)
+  const [onglet, setOnglet] = useState<NomOnglet>('valider')
 
   const charger = useCallback(async () => {
-    const [p, s, t, j, r, b, ev] = await Promise.all([
+    const [p, s, t, j, r, b, ev, prof] = await Promise.all([
       supabase.rpc('progress', { p: pact.id }).single(),
       supabase.from('situation_scale').select('*').order('rank'),
-      supabase.from('tiers').select('*').eq('pact_id', pact.id).order('points'),
-      supabase.from('days').select('*').eq('pact_id', pact.id).order('day', { ascending: false }).limit(30),
+      supabase.from('tiers').select('*').eq('pact_id', pact.id).order('level'),
+      supabase.from('days').select('*').eq('pact_id', pact.id).order('day', { ascending: false }).limit(60),
       supabase.from('rewards').select('*').eq('pact_id', pact.id),
       supabase.from('bonuses').select('*').eq('pact_id', pact.id).order('created_at', { ascending: false }),
       supabase.from('tier_events').select('*').eq('pact_id', pact.id).order('tier_level'),
+      supabase.from('profiles').select('pseudo').eq('id', pact.player_id ?? '').maybeSingle(),
     ])
-    const jours = (j.data as Day[]) ?? []
     setProgres((p.data as Progress) ?? null)
     setBareme((s.data as Situation[]) ?? [])
     setPaliers((t.data as Tier[]) ?? [])
-    setAValider(jours.filter((d) => !d.validated_at))
-    setJours(jours)
-    setCoffres((r.data as Reward[]) ?? [])
-    const tousLesBonus = (b.data as Bonus[]) ?? []
-    setBonus(tousLesBonus)
-    setBonusCaches(tousLesBonus.filter((x) => !x.revealed_at))
-    setCoffresOuverts((ev.data as TierEvent[]) ?? [])
+    setJours((j.data as Day[]) ?? [])
+    setRecompenses((r.data as Reward[]) ?? [])
+    setBonus((b.data as Bonus[]) ?? [])
+    setEvenements((ev.data as TierEvent[]) ?? [])
+    setPseudoJoueur((prof.data as { pseudo: string } | null)?.pseudo ?? null)
     setChargement(false)
-  }, [pact.id])
+  }, [pact.id, pact.player_id])
 
   useEffect(() => {
     void charger()
@@ -52,56 +55,234 @@ export default function Partenaire({ pact, onQuitter }: Props) {
 
   if (chargement) return <div className="ecran doux">Un instant…</div>
 
-  const xp = progres?.total ?? 0
+  const aValider = jours.filter((d) => !d.validated_at)
+  const enReserve = bonus.filter((b) => !b.revealed_at)
+  const aRemettre = evenements.filter((e) => !e.delivered_at)
   const prochain = progres?.next_tier_level ?? null
-  const coffrePret = prochain ? coffres.some((c) => c.tier_level === prochain) : true
+  const prochainPret = prochain
+    ? recompenses.some((c) => c.tier_level === prochain)
+    : true
 
   return (
-    <div className="ecran">
-      <Entete
-        actions={
-          <button className="fantome" onClick={onQuitter}>
-            Réglages
-          </button>
-        }
+    <div className="jeu">
+      <SceneBarre
+        progres={progres}
+        pseudoJoueur={pseudoJoueur}
+        aValider={aValider.length}
+        aRemettre={aRemettre.length}
+        prochain={prochain}
+        prochainPret={prochainPret}
+        enReserve={enReserve.length}
+        onReglages={onQuitter}
       />
 
-      <Blason progres={progres} />
+      <div className="panneau">
+        {onglet === 'valider' && (
+          <>
+            {aValider.length === 0 ? (
+              <div className="fenetre">
+                <h2>À valider</h2>
+                <p className="faible" style={{ marginBottom: 0 }}>
+                  Rien en attente. Tout ce qu’il a déclaré est arbitré.
+                </p>
+              </div>
+            ) : (
+              aValider.map((j) => (
+                <Arbitrage
+                  key={j.id}
+                  jour={j}
+                  bareme={bareme}
+                  pact={pact}
+                  onFait={charger}
+                />
+              ))
+            )}
+            <BonusSurprise pact={pact} enReserve={enReserve} onFait={charger} />
+          </>
+        )}
 
-      {bonusCaches.length > 0 && (
-        <p className="faible" style={{ marginTop: -6 }}>
-          {bonusCaches.length} bonus surprise en réserve, invisible{bonusCaches.length > 1 ? 's' : ''} pour lui.
-        </p>
-      )}
+        {onglet === 'coffres' && (
+          <Coffres
+            pact={pact}
+            paliers={paliers}
+            recompenses={recompenses}
+            evenements={evenements}
+            prochain={prochain}
+            onFait={charger}
+          />
+        )}
 
-      {prochain && !coffrePret && (
-        <div className="avis">
-          Il est niveau {progres?.level ?? 1}, à {xp} XP. Le coffre du niveau{' '}
-          {prochain} approche — as-tu prévu quelque chose&nbsp;?
+        {onglet === 'journal' && (
+          <Journal
+            jours={jours}
+            bonus={bonus}
+            bareme={bareme}
+            paliers={paliers}
+            coffres={evenements}
+            avecMots
+          />
+        )}
+      </div>
+
+      <nav className="onglets" role="tablist">
+        <OngletBas
+          actif={onglet === 'valider'}
+          picto="⚖"
+          nom="À valider"
+          pastille={aValider.length > 0 ? String(aValider.length) : undefined}
+          onClick={() => setOnglet('valider')}
+        />
+        <OngletBas
+          actif={onglet === 'coffres'}
+          picto="🎁"
+          nom="Tes coffres"
+          pastille={
+            paliers.length > recompenses.length
+              ? String(paliers.length - recompenses.length)
+              : undefined
+          }
+          onClick={() => setOnglet('coffres')}
+        />
+        <OngletBas
+          actif={onglet === 'journal'}
+          picto="📖"
+          nom="Journal"
+          onClick={() => setOnglet('journal')}
+        />
+      </nav>
+    </div>
+  )
+}
+
+/* ====================================================================== */
+
+function OngletBas({
+  actif,
+  picto,
+  nom,
+  pastille,
+  onClick,
+}: {
+  actif: boolean
+  picto: string
+  nom: string
+  pastille?: string
+  onClick: () => void
+}) {
+  return (
+    <button className="onglet" role="tab" aria-selected={actif} onClick={onClick}>
+      <span className="pictogramme" aria-hidden="true">
+        {picto}
+      </span>
+      {nom}
+      {pastille && <span className="pastille">{pastille}</span>}
+    </button>
+  )
+}
+
+/* ====================================================================== */
+
+function SceneBarre({
+  progres,
+  pseudoJoueur,
+  aValider,
+  aRemettre,
+  prochain,
+  prochainPret,
+  enReserve,
+  onReglages,
+}: {
+  progres: Progress | null
+  pseudoJoueur: string | null
+  aValider: number
+  aRemettre: number
+  prochain: number | null
+  prochainPret: boolean
+  enReserve: number
+  onReglages: () => void
+}) {
+  const xp = progres?.total ?? 0
+  const niveau = levelFromXp(xp)
+  const [sansAvatar, setSansAvatar] = useState(false)
+  const portrait = sansAvatar
+    ? `${import.meta.env.BASE_URL}logo-320.png`
+    : avatarPour(niveau.level)
+  const lui = pseudoJoueur ?? 'Il'
+
+  // Ce que la boîte de dialogue lui dit, par ordre d'urgence.
+  const message =
+    aValider > 0 ? (
+      <p>
+        {lui} a déclaré{' '}
+        <b>
+          {aValider} journée{aValider > 1 ? 's' : ''}
+        </b>
+        . À toi d’arbitrer ce que ça valait.
+      </p>
+    ) : aRemettre > 0 ? (
+      <p>
+        Un coffre est tombé. <b>À toi de choisir le moment</b> — ce soir, ou dans
+        trois jours.
+      </p>
+    ) : prochain && !prochainPret ? (
+      <p>
+        {lui} est niveau {niveau.level}. Le <b>coffre du niveau {prochain}</b>{' '}
+        approche, et il est encore vide.
+      </p>
+    ) : (
+      <p>
+        Rien en attente. {lui} tient le cap
+        {enReserve > 0 && (
+          <>
+            , et tu gardes <b>{enReserve} bonus</b> en réserve
+          </>
+        )}
+        .
+      </p>
+    )
+
+  return (
+    <div className="scene">
+      <div className="scene-haut">
+        <div className="portrait-scene">
+          <img key={portrait} src={portrait} alt="" onError={() => setSansAvatar(true)} />
+          <span className="niveau-plaque">NIV. {niveau.level}</span>
         </div>
-      )}
 
-      {aValider.length > 0 && (
-        <div className="carte">
-          <h2>À valider</h2>
-          {aValider.map((j) => (
-            <Arbitrage key={j.id} jour={j} bareme={bareme} pact={pact} onFait={charger} />
-          ))}
+        <div className="ardoise">
+          <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="rang-texte">{rankLabel(niveau)}</div>
+              <div className="nom">
+                {pseudoJoueur ?? 'Ton binôme'} · {xp} XP
+              </div>
+            </div>
+            <button
+              className="fantome"
+              onClick={onReglages}
+              aria-label="Réglages"
+              style={{ padding: '2px 6px', fontSize: '1.05rem' }}
+            >
+              ⚙
+            </button>
+          </div>
+
+          <div className="ligne-xp">
+            <span className="etiquette">XP</span>
+            <div className="jauge-hud">
+              <i style={{ width: `${Math.round(niveau.ratio * 100)}%` }} />
+            </div>
+          </div>
+
+          <p className="compte">
+            <b>{progres?.current_streak ?? 0}</b> jours d’affilée · record{' '}
+            <b>{progres?.best_streak ?? 0}</b> · <b>{progres?.zero_days ?? 0}</b>{' '}
+            journées à zéro
+          </p>
         </div>
-      )}
+      </div>
 
-      <BonusSurprise pact={pact} onFait={charger} />
-
-      <Coffres pact={pact} paliers={paliers} coffres={coffres} onFait={charger} />
-
-      <Journal
-        jours={jours}
-        bonus={bonus}
-        bareme={bareme}
-        paliers={paliers}
-        coffres={coffresOuverts}
-        avecMots
-      />
+      <div className="dialogue">{message}</div>
     </div>
   )
 }
@@ -152,8 +333,10 @@ function Arbitrage({
   }
 
   return (
-    <div style={{ borderTop: '1px solid var(--bord)', paddingTop: 14, marginTop: 14 }}>
-      <div className="rangee" style={{ justifyContent: 'space-between' }}>
+    <div className="fenetre">
+      <h2>À valider</h2>
+
+      <div className="entete-jour">
         <b>
           {new Date(jour.day).toLocaleDateString('fr-FR', {
             weekday: 'long',
@@ -166,40 +349,35 @@ function Arbitrage({
         </span>
       </div>
 
-      {jour.note && (
-        <p className="doux" style={{ fontStyle: 'italic', marginTop: 8 }}>
-          « {jour.note} »
-        </p>
-      )}
+      {jour.note && <p className="jour-mot" style={{ marginLeft: 0 }}>« {jour.note} »</p>}
 
       {proposees.length === 0 ? (
-        <p className="faible" style={{ marginTop: 8 }}>
-          Rien de particulier ce jour-là.
+        <p className="faible" style={{ margin: '12px 0' }}>
+          Rien de particulier ce jour-là — il n’y a que le point de la journée.
         </p>
       ) : (
-        <div className="quetes">
+        <div style={{ margin: '14px 0 4px' }}>
           {proposees.map((s) => (
-            <div key={s.key} className="quete" data-cochee="true">
-              <span style={{ flex: 1 }}>{s.label}</span>
-              <div className="rangee">
+            <div key={s.key} className="medaille">
+              <span className="gemme-mini" data-rarete={rarete(s.points)} />
+              <span className="nom-quete">{s.label}</span>
+              <div className="reglage">
                 <button
-                  className="fantome"
                   onClick={() =>
                     setPoints((p) => ({ ...p, [s.key]: Math.max(0, (p[s.key] ?? 0) - 1) }))
                   }
-                  aria-label="Retirer un point"
+                  disabled={(points[s.key] ?? 0) <= 0}
+                  aria-label={`Retirer un point à ${s.label}`}
                 >
                   −
                 </button>
-                <span className="gain" style={{ minWidth: 34, textAlign: 'center' }}>
-                  +{points[s.key] ?? 0}
-                </span>
+                <span className="valeur">+{points[s.key] ?? 0}</span>
                 <button
-                  className="fantome"
                   onClick={() =>
                     setPoints((p) => ({ ...p, [s.key]: Math.min(5, (p[s.key] ?? 0) + 1) }))
                   }
-                  aria-label="Ajouter un point"
+                  disabled={(points[s.key] ?? 0) >= 5}
+                  aria-label={`Ajouter un point à ${s.label}`}
                 >
                   +
                 </button>
@@ -209,20 +387,37 @@ function Arbitrage({
         </div>
       )}
 
-      <button className="principal" onClick={valider} disabled={occupe} style={{ marginTop: 12 }}>
-        {total > 0 ? `Accorder +${total} XP` : 'Rien à ajouter — valider'}
+      <button className="action-jeu" onClick={valider} disabled={occupe}>
+        {total > 0 ? `Accorder +${total} XP` : 'Valider sans bonus'}
+        <span className="sous">
+          {proposees.length > 0
+            ? 'Le barème propose, tu décides'
+            : 'Rien à arbitrer ce jour-là'}
+        </span>
       </button>
     </div>
   )
 }
 
+function rarete(points: number) {
+  return points >= 5 ? 'epique' : points >= 3 ? 'rare' : 'commune'
+}
+
 /* ====================================================================== */
 
-function BonusSurprise({ pact, onFait }: { pact: Pact; onFait: () => void }) {
+function BonusSurprise({
+  pact,
+  enReserve,
+  onFait,
+}: {
+  pact: Pact
+  enReserve: Bonus[]
+  onFait: () => void
+}) {
   const [ouvert, setOuvert] = useState(false)
   const [points, setPoints] = useState(2)
   const [mot, setMot] = useState('')
-  const [tout_de_suite, setToutDeSuite] = useState(true)
+  const [toutDeSuite, setToutDeSuite] = useState(true)
   const [occupe, setOccupe] = useState(false)
 
   async function accorder() {
@@ -233,7 +428,7 @@ function BonusSurprise({ pact, onFait }: { pact: Pact; onFait: () => void }) {
       points,
       label: 'Bonus surprise',
       message: mot.trim() || null,
-      revealed_at: tout_de_suite ? new Date().toISOString() : null,
+      revealed_at: toutDeSuite ? new Date().toISOString() : null,
     })
     setOccupe(false)
     setOuvert(false)
@@ -241,76 +436,107 @@ function BonusSurprise({ pact, onFait }: { pact: Pact; onFait: () => void }) {
     onFait()
   }
 
-  if (!ouvert)
-    return (
-      <div className="carte">
-        <h2>Ton pouvoir spécial</h2>
-        <p className="doux" style={{ marginBottom: 12 }}>
-          De +1 à +5 XP, sans prévenir, quand tu trouves qu'il a traversé quelque
-          chose de difficile.
-        </p>
-        <button className="discret" onClick={() => setOuvert(true)}>
-          Accorder un bonus surprise
-        </button>
-      </div>
-    )
+  async function reveler(id: string) {
+    setOccupe(true)
+    await supabase
+      .from('bonuses')
+      .update({ revealed_at: new Date().toISOString() })
+      .eq('id', id)
+    setOccupe(false)
+    onFait()
+  }
 
   return (
-    <div className="carte carte-or">
-      <h2>Bonus surprise</h2>
-      <div className="rangee" style={{ justifyContent: 'center', margin: '8px 0 16px' }}>
-        {[1, 2, 3, 4, 5].map((n) => (
-          <button
-            key={n}
-            onClick={() => setPoints(n)}
-            style={{
-              flex: 1,
-              fontWeight: 800,
-              color: points === n ? '#2a1c00' : 'var(--or)',
-              background: points === n ? 'var(--or)' : 'transparent',
-              borderColor: 'var(--or-sombre)',
-            }}
-          >
-            +{n}
+    <div className="fenetre">
+      <h2>Ton pouvoir</h2>
+
+      {!ouvert ? (
+        <>
+          <p className="faible" style={{ marginTop: 0 }}>
+            De +1 à +5 XP, sans prévenir, quand tu trouves qu’il a traversé
+            quelque chose de difficile.
+          </p>
+          <button className="discret" onClick={() => setOuvert(true)}>
+            Accorder un bonus surprise
           </button>
-        ))}
-      </div>
+        </>
+      ) : (
+        <>
+          <div className="choix-points">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <button
+                key={n}
+                aria-pressed={points === n}
+                onClick={() => setPoints(n)}
+              >
+                +{n}
+              </button>
+            ))}
+          </div>
 
-      <div className="champ">
-        <label htmlFor="mot-bonus">Un mot, s'il le mérite</label>
-        <textarea
-          id="mot-bonus"
-          value={mot}
-          onChange={(e) => setMot(e.target.value.slice(0, 500))}
-          placeholder="Il ne le lira qu'au moment où tu le décides."
-        />
-      </div>
+          <textarea
+            value={mot}
+            onChange={(e) => setMot(e.target.value.slice(0, 500))}
+            placeholder="Un mot, s’il le mérite. Il ne le lira qu’au moment où tu le décides."
+          />
 
-      <div className="quetes">
-        <button
-          className="quete"
-          data-cochee={tout_de_suite}
-          onClick={() => setToutDeSuite(true)}
-        >
-          <span className="case">{tout_de_suite ? '✓' : ''}</span>
-          <span>Lui montrer tout de suite</span>
-        </button>
-        <button
-          className="quete"
-          data-cochee={!tout_de_suite}
-          onClick={() => setToutDeSuite(false)}
-        >
-          <span className="case">{!tout_de_suite ? '✓' : ''}</span>
-          <span>Garder en réserve — invisible pour lui</span>
-        </button>
-      </div>
+          <div className="onglets-fenetre" style={{ marginTop: 12 }}>
+            <button
+              className="onglet-fenetre"
+              aria-selected={toutDeSuite}
+              onClick={() => setToutDeSuite(true)}
+            >
+              Lui montrer
+            </button>
+            <button
+              className="onglet-fenetre"
+              aria-selected={!toutDeSuite}
+              onClick={() => setToutDeSuite(false)}
+            >
+              Garder en réserve
+            </button>
+          </div>
 
-      <button className="principal" onClick={accorder} disabled={occupe} style={{ marginTop: 12 }}>
-        Accorder +{points} XP
-      </button>
-      <button className="fantome" onClick={() => setOuvert(false)}>
-        Annuler
-      </button>
+          <button
+            className="action-jeu"
+            onClick={accorder}
+            disabled={occupe}
+            style={{ marginTop: 14 }}
+          >
+            Accorder +{points} XP
+            <span className="sous">
+              {toutDeSuite ? 'Il le verra tout de suite' : 'Invisible pour lui'}
+            </span>
+          </button>
+          <button className="fantome" onClick={() => setOuvert(false)}>
+            Annuler
+          </button>
+        </>
+      )}
+
+      {enReserve.length > 0 && (
+        <div style={{ marginTop: 16, borderTop: '1px solid var(--bord)', paddingTop: 14 }}>
+          <p className="faible" style={{ marginTop: 0 }}>
+            En réserve, invisible{enReserve.length > 1 ? 's' : ''} pour lui :
+          </p>
+          {enReserve.map((b) => (
+            <div key={b.id} className="medaille">
+              <span className="gemme-mini" data-rarete={rarete(b.points)} />
+              <span className="nom-quete">
+                +{b.points} XP
+                {b.message && (
+                  <span className="faible" style={{ display: 'block', fontStyle: 'italic' }}>
+                    « {b.message} »
+                  </span>
+                )}
+              </span>
+              <button className="discret" style={{ width: 'auto', margin: 0 }} onClick={() => reveler(b.id)}>
+                Révéler
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -320,89 +546,115 @@ function BonusSurprise({ pact, onFait }: { pact: Pact; onFait: () => void }) {
 function Coffres({
   pact,
   paliers,
-  coffres,
+  recompenses,
+  evenements,
+  prochain,
   onFait,
 }: {
   pact: Pact
   paliers: Tier[]
-  coffres: Reward[]
+  recompenses: Reward[]
+  evenements: TierEvent[]
+  prochain: number | null
   onFait: () => void
 }) {
-  const [brouillons, setBrouillons] = useState<Record<number, string>>({})
-  const [occupe, setOccupe] = useState<number | null>(null)
+  const [edite, setEdite] = useState<number | null>(null)
+  const [texte, setTexte] = useState('')
+  const [occupe, setOccupe] = useState(false)
 
-  async function enregistrer(niveau: number) {
-    const contenu = (brouillons[niveau] ?? '').trim()
+  function ouvrir(niveau: number) {
+    setEdite(niveau)
+    setTexte(recompenses.find((c) => c.tier_level === niveau)?.content ?? '')
+  }
+
+  async function enregistrer() {
+    if (edite === null) return
+    const contenu = texte.trim()
     if (!contenu) return
-    setOccupe(niveau)
+    setOccupe(true)
     await supabase.from('rewards').upsert(
       {
         pact_id: pact.id,
-        tier_level: niveau,
+        tier_level: edite,
         content: contenu,
         updated_at: new Date().toISOString(),
       },
       { onConflict: 'pact_id,tier_level' },
     )
-    setOccupe(null)
-    setBrouillons((b) => ({ ...b, [niveau]: '' }))
+    setOccupe(false)
+    setEdite(null)
     onFait()
   }
 
+  const enCours = paliers.find((t) => t.level === edite)
+
+  if (enCours) {
+    return (
+      <div className="fenetre">
+        <h2>Coffre du niveau {enCours.level}</h2>
+        <p className="faible" style={{ marginTop: 0 }}>
+          {enCours.label} — il connaît le niveau, jamais ce qu’il y a dedans.
+        </p>
+        <textarea
+          value={texte}
+          onChange={(e) => setTexte(e.target.value.slice(0, 1000))}
+          placeholder="Ce que tu lui prépares…"
+          autoFocus
+        />
+        <button
+          className="action-jeu"
+          onClick={enregistrer}
+          disabled={occupe || !texte.trim()}
+          style={{ marginTop: 12 }}
+        >
+          Sceller le coffre
+        </button>
+        <button className="fantome" onClick={() => setEdite(null)}>
+          ← Retour
+        </button>
+      </div>
+    )
+  }
+
+  const manquants = paliers.length - recompenses.length
+
   return (
-    <div className="carte">
+    <div className="fenetre">
       <h2>Tes coffres</h2>
-      <p className="faible" style={{ marginBottom: 14 }}>
-        Il connaît les paliers, jamais ce qu'il y a dedans. Cette liste ne quitte
-        pas ton écran : son compte n'a pas le droit de la lire.
+      <p className="faible" style={{ marginTop: 0 }}>
+        {manquants > 0
+          ? `${manquants} coffre${manquants > 1 ? 's' : ''} encore vide${manquants > 1 ? 's' : ''}.`
+          : 'Tous les coffres sont prêts.'}{' '}
+        Cette liste ne quitte pas ton écran : son compte n’a pas le droit de la
+        lire.
       </p>
 
-      {paliers.map((t) => {
-        const existant = coffres.find((c) => c.tier_level === t.level)
-        const enEdition = brouillons[t.level] !== undefined && brouillons[t.level] !== ''
-        return (
-          <div
-            key={t.level}
-            style={{ borderTop: '1px solid var(--bord)', paddingTop: 12, marginTop: 12 }}
-          >
-            <div className="rangee" style={{ justifyContent: 'space-between' }}>
-              <b style={{ color: 'var(--or)' }}>
-                Niveau {t.level} — {t.label}
-              </b>
-            </div>
-            {existant && !enEdition ? (
-              <p className="doux" style={{ margin: '6px 0 0' }}>
-                {existant.content}{' '}
-                <button
-                  className="fantome"
-                  onClick={() => setBrouillons((b) => ({ ...b, [t.level]: existant.content }))}
-                >
-                  modifier
-                </button>
-              </p>
-            ) : (
-              <>
-                <div className="champ" style={{ marginTop: 8, marginBottom: 8 }}>
-                  <input
-                    value={brouillons[t.level] ?? ''}
-                    onChange={(e) =>
-                      setBrouillons((b) => ({ ...b, [t.level]: e.target.value.slice(0, 1000) }))
-                    }
-                    placeholder={existant ? existant.content : 'Ce que tu lui prépares…'}
-                  />
-                </div>
-                <button
-                  className="discret"
-                  onClick={() => enregistrer(t.level)}
-                  disabled={occupe === t.level || !(brouillons[t.level] ?? '').trim()}
-                >
-                  Enregistrer
-                </button>
-              </>
-            )}
-          </div>
-        )
-      })}
+      <div className="coffres-grille">
+        {paliers.map((t) => {
+          const rempli = recompenses.find((c) => c.tier_level === t.level)
+          const tombe = evenements.some((e) => e.tier_level === t.level)
+          return (
+            <button
+              key={t.level}
+              className="coffre-carte"
+              data-rempli={Boolean(rempli)}
+              data-urgent={!rempli && t.level === prochain}
+              onClick={() => ouvrir(t.level)}
+            >
+              <span className="coffre-glyphe">{tombe ? '🔓' : rempli ? '🎁' : '🔒'}</span>
+              <span className="niveau">Niveau {t.level}</span>
+              <span className="titre">{t.label}</span>
+              {rempli ? (
+                <span className="contenu">{rempli.content}</span>
+              ) : (
+                <span className="a-preparer">
+                  {t.level === prochain ? 'Le prochain — à préparer' : 'À préparer'}
+                </span>
+              )}
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }

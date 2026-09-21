@@ -555,3 +555,191 @@
   margin-top: 26px;
   text-align: center;
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LE POSTE DE COMMANDEMENT — la vue de celle qui tient la barre.
+   Même grammaire que la scène du joueur, mais sans fête plein écran :
+   la célébration appartient à celui qui avance, elle la déclenche.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ------------------------------------------------- la grille des coffres */
+
+.coffres-grille {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 4px 0 0;
+}
+
+.coffre-carte {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  padding: 12px 11px;
+  min-height: 104px;
+  text-align: left;
+  border-radius: 12px;
+  border: 2px dashed #17505f;
+  background: linear-gradient(180deg, #0a2f3b, #06232c);
+  color: var(--encre-faible);
+  font-size: 0.78rem;
+  line-height: 1.3;
+  transition:
+    transform 0.12s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.coffre-carte:active {
+  transform: scale(0.97);
+}
+
+/* Rempli : le coffre est prêt, il brille. */
+.coffre-carte[data-rempli='true'] {
+  border-style: solid;
+  border-color: var(--or-sombre);
+  background: linear-gradient(180deg, #2a2009, #14100a);
+  color: var(--encre-doux);
+  box-shadow: 0 0 16px rgba(233, 180, 76, 0.22);
+}
+
+/* Celui qui approche sans rien dedans : on le signale, sans alarme. */
+.coffre-carte[data-urgent='true'] {
+  border-color: var(--azur);
+  box-shadow: 0 0 16px rgba(63, 192, 204, 0.2);
+}
+
+.coffre-glyphe {
+  font-size: 1.5rem;
+  line-height: 1;
+  filter: grayscale(1) opacity(0.45);
+}
+
+.coffre-carte[data-rempli='true'] .coffre-glyphe {
+  filter: none;
+}
+
+.coffre-carte .niveau {
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--or);
+}
+
+.coffre-carte .titre {
+  font-weight: 700;
+  color: var(--encre);
+}
+
+.coffre-carte .contenu {
+  font-style: italic;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.coffre-carte .a-preparer {
+  color: var(--encre-faible);
+}
+
+/* -------------------------------------------------- arbitrage en médailles */
+
+.medaille {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 12px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  border: 2px solid var(--or-sombre);
+  background: linear-gradient(180deg, #123f4d, #0a2d38);
+}
+
+.medaille .nom-quete {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.85rem;
+  color: var(--encre);
+}
+
+/* Le réglage : deux boutons de laiton et la valeur au milieu. */
+.reglage {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 10px;
+  background: #06232c;
+  border: 1px solid #17505f;
+}
+
+.reglage button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(180deg, #17505f, #0d3a48);
+  color: var(--or-clair);
+  font-size: 1.05rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.reglage button:disabled {
+  opacity: 0.35;
+}
+
+.reglage .valeur {
+  min-width: 42px;
+  text-align: center;
+  font-size: 0.92rem;
+  font-weight: 900;
+  color: var(--or);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------ le choix du bonus surprise */
+
+.choix-points {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 7px;
+  margin: 6px 0 14px;
+}
+
+.choix-points button {
+  padding: 13px 0;
+  border-radius: 10px;
+  border: 2px solid var(--or-sombre);
+  background: linear-gradient(180deg, #123f4d, #0a2d38);
+  color: var(--or);
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.choix-points button[aria-pressed='true'] {
+  color: #2e1f06;
+  background: linear-gradient(180deg, var(--or-clair), var(--or));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* Le libellé du jour arbitré. */
+.entete-jour {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.entete-jour b {
+  font-size: 0.92rem;
+}
