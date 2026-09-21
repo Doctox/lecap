@@ -1,0 +1,473 @@
+/* Le Cap — ambiance d'aventure, reprise du blason : laiton, lagon profond,
+   parchemin. On est dans une carte au trésor, pas dans un tableau de bord.
+
+   Règle de couleur : aucun rouge dans l'interface. Un écart se dit en ardoise
+   calme, jamais en alerte. L'or porte la marque, les actions et les coffres ;
+   l'azur porte la progression. */
+
+/* Teintes relevées directement sur le blason : le cadran #003048, les verts
+   d'eau #004848 et #006060, le laiton #a86018 et #c07818, le ciel #09b4c0. */
+:root {
+  --fond: #041b25;
+  --fond-2: #072935;
+  --carte: #0a3040;
+  --carte-haut: #0e3d4e;
+  --bord: #1b5464;
+
+  --encre: #f4ecdb;
+  --encre-doux: #b4cfd0;
+  --encre-faible: #7d9fa3;
+
+  --azur: #3fc0cc;
+  --azur-sombre: #0a6b76;
+  --or: #e9b44c;
+  --or-clair: #f8d281;
+  --or-sombre: #a86018;
+  --feuille: #2f7a5c;
+  --ardoise: #587c85;
+
+  --rayon: 16px;
+  --ombre: 0 8px 28px rgba(0, 0, 0, 0.5);
+  --lueur-azur: 0 0 22px rgba(63, 192, 204, 0.3);
+  --lueur-or: 0 0 26px rgba(233, 180, 76, 0.34);
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(1100px 620px at 50% -12%, #0b3a49 0%, transparent 62%),
+    var(--fond);
+  color: var(--encre);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+
+.ecran {
+  max-width: 540px;
+  margin: 0 auto;
+  padding: 24px 16px calc(32px + env(safe-area-inset-bottom));
+}
+
+h1,
+h2,
+h3 {
+  margin: 0 0 12px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+h1 {
+  font-size: 1.75rem;
+}
+
+h2 {
+  font-size: 1.15rem;
+}
+
+p {
+  margin: 0 0 12px;
+}
+
+.doux {
+  color: var(--encre-doux);
+}
+
+.faible {
+  color: var(--encre-faible);
+  font-size: 0.88rem;
+}
+
+/* ------------------------------------------------------------------ cartes */
+
+.carte {
+  background: linear-gradient(180deg, var(--carte-haut), var(--carte));
+  border: 1px solid var(--bord);
+  border-radius: var(--rayon);
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: var(--ombre);
+}
+
+/* Le cerclage de laiton du blason, pour ce qui touche au trésor. */
+.carte-or {
+  border-color: var(--or-sombre);
+  box-shadow:
+    var(--ombre),
+    var(--lueur-or),
+    inset 0 0 0 1px rgba(233, 180, 76, 0.16);
+}
+
+/* ------------------------------------------------------------------ boutons */
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border-radius: 12px;
+  border: 1px solid var(--bord);
+  background: var(--carte-haut);
+  color: var(--encre);
+  padding: 12px 16px;
+  transition:
+    transform 0.12s ease,
+    filter 0.12s ease;
+}
+
+button:active:not(:disabled) {
+  transform: translateY(1px) scale(0.99);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.principal {
+  width: 100%;
+  padding: 22px 18px;
+  font-size: 1.22rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: #3a2708;
+  background: linear-gradient(180deg, var(--or-clair), var(--or));
+  border: 1px solid var(--or-sombre);
+  box-shadow: var(--lueur-or);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* « J'ai bu aujourd'hui » : présent, lisible, jamais alarmant.
+   Discret par la taille, pas par la honte. */
+.discret {
+  width: 100%;
+  margin-top: 10px;
+  background: transparent;
+  border: 1px solid var(--bord);
+  color: var(--encre-doux);
+  font-size: 0.95rem;
+  padding: 13px 16px;
+}
+
+.fantome {
+  background: transparent;
+  border-color: transparent;
+  color: var(--encre-doux);
+  padding: 8px 10px;
+}
+
+/* ------------------------------------------------------------- progression */
+
+.barre {
+  height: 12px;
+  border-radius: 999px;
+  background: #03151d;
+  border: 1px solid var(--bord);
+  overflow: hidden;
+}
+
+.barre > i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--azur-sombre), var(--azur));
+  box-shadow: var(--lueur-azur);
+  transition: width 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.barre-or > i {
+  background: linear-gradient(90deg, var(--or-sombre), var(--or));
+  box-shadow: var(--lueur-or);
+}
+
+.xp-gros {
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--or);
+  text-shadow: 0 2px 12px rgba(233, 180, 76, 0.25);
+}
+
+.rang {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--or);
+  background: rgba(233, 180, 76, 0.1);
+  border: 1px solid var(--or-sombre);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.stat {
+  text-align: center;
+  padding: 12px 6px;
+  border-radius: 12px;
+  background: #072935;
+  border: 1px solid var(--bord);
+}
+
+.stat b {
+  display: block;
+  font-size: 1.45rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat span {
+  font-size: 0.72rem;
+  color: var(--encre-faible);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ------------------------------------------------------------------ quêtes */
+
+.quetes {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0 4px;
+}
+
+.quete {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 14px;
+  background: #072935;
+}
+
+.quete[data-cochee='true'] {
+  border-color: var(--azur-sombre);
+  background: rgba(63, 192, 204, 0.1);
+}
+
+.quete .case {
+  flex: 0 0 22px;
+  height: 22px;
+  border-radius: 7px;
+  border: 2px solid var(--bord);
+  display: grid;
+  place-items: center;
+  font-size: 0.8rem;
+  color: #041b25;
+}
+
+.quete[data-cochee='true'] .case {
+  background: var(--azur);
+  border-color: var(--azur);
+}
+
+.quete .gain {
+  margin-left: auto;
+  font-weight: 700;
+  color: var(--or);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------------ coffre */
+
+.coffre {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.coffre .sceau {
+  flex: 0 0 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: var(--or);
+  background: radial-gradient(circle at 35% 30%, #1a5464, #072935);
+  border: 2px solid var(--or-sombre);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.5);
+}
+
+/* ------------------------------------------------------------- formulaires */
+
+input,
+textarea {
+  font: inherit;
+  width: 100%;
+  padding: 13px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--bord);
+  background: #03151d;
+  color: var(--encre);
+}
+
+input:focus,
+textarea:focus,
+button:focus-visible {
+  outline: 2px solid var(--or);
+  outline-offset: 2px;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 84px;
+}
+
+label {
+  display: block;
+  margin: 0 0 6px;
+  font-size: 0.88rem;
+  color: var(--encre-doux);
+}
+
+.champ {
+  margin-bottom: 14px;
+}
+
+.code {
+  font-family: ui-monospace, 'Cascadia Mono', monospace;
+  font-size: 1.6rem;
+  letter-spacing: 0.32em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* ------------------------------------------------------------------ divers */
+
+.rangee {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.avis {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(233, 180, 76, 0.1);
+  border: 1px solid var(--or-sombre);
+  color: var(--encre);
+  font-size: 0.92rem;
+  margin-bottom: 14px;
+}
+
+.entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.marque {
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.marque span {
+  color: var(--or);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Un lien qui doit se comporter comme un bouton fantôme. */
+a.fantome {
+  display: inline-block;
+  text-decoration: none;
+  border-radius: 12px;
+  border: 1px solid var(--bord);
+  color: var(--encre-doux);
+  padding: 10px 14px;
+  font-size: 0.95rem;
+}
+
+/* Le blason remplace le nom écrit dans les en-têtes. */
+.marque-logo {
+  width: auto;
+  height: 74px;
+  display: block;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
+}
+
+/* ------------------------------------------------ l'info-bulle des rôles */
+
+.avec-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.avec-info h2 {
+  margin: 0;
+}
+
+.info {
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--or-sombre);
+  background: rgba(233, 180, 76, 0.12);
+  color: var(--or);
+  font-size: 0.82rem;
+  font-weight: 800;
+  font-style: italic;
+  font-family: Georgia, serif;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+}
+
+.info[aria-expanded='true'] {
+  background: var(--or);
+  color: #3a2708;
+}
+
+.explication {
+  margin: 0 0 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--or-sombre);
+  background: rgba(233, 180, 76, 0.07);
+}
+
+.explication p {
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+  color: var(--encre-doux);
+}
+
+.explication p:last-child {
+  margin-bottom: 0;
+}
+
+.explication b {
+  color: var(--or);
+}

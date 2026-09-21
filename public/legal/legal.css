@@ -1,0 +1,102 @@
+:root {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: #23303a;
+  background: #f4ece0;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  padding: 28px 18px;
+  background: radial-gradient(circle at 50% 0, #fdf7ec, #ece0cd);
+}
+main {
+  width: min(100%, 760px);
+  margin: auto;
+  padding: 30px;
+  border: 1px solid #d3bd97;
+  border-radius: 20px;
+  background: #fffaf1;
+  box-shadow: 0 18px 55px rgba(10, 48, 64, 0.13);
+}
+h1,
+h2 {
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #0a3040;
+}
+h1 {
+  margin: 0 0 5px;
+  font-size: 34px;
+}
+h2 {
+  margin: 28px 0 8px;
+  font-size: 20px;
+}
+p,
+li {
+  font-size: 14.5px;
+  line-height: 1.68;
+  color: #4a5a63;
+}
+li {
+  margin-bottom: 6px;
+}
+a {
+  color: #0a6b76;
+}
+strong {
+  color: #23303a;
+}
+.meta {
+  color: #a86018;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 22px 0;
+}
+nav a {
+  padding: 8px 12px;
+  border: 1px solid #d3bd97;
+  border-radius: 18px;
+  text-decoration: none;
+  background: #f7f1e5;
+}
+/* Ce qui mérite qu'on s'arrête : le consentement, et ce que voit le binôme. */
+.encadre {
+  margin: 24px 0;
+  padding: 2px 18px 18px;
+  border: 1px solid #c9a86a;
+  border-radius: 15px;
+  background: #fdf5e4;
+}
+.encadre h2 {
+  color: #8a5a14;
+}
+footer {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid #e0d2ba;
+  font-size: 12px;
+  color: #7d8a90;
+}
+@media (max-width: 540px) {
+  body {
+    padding: 0;
+  }
+  main {
+    min-height: 100vh;
+    border: 0;
+    border-radius: 0;
+    padding: 26px 20px;
+  }
+  h1 {
+    font-size: 28px;
+  }
+}

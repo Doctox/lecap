@@ -1,0 +1,99 @@
+name: Vérifier et publier sur GitHub Pages
+
+# Le dépôt s'appelle « lecap », et le site utilisateur Doctox.github.io porte le
+# domaine www.doctox.fr : GitHub sert donc ce projet sur www.doctox.fr/lecap/,
+# ce qui correspond au `base` de vite.config.ts. Ne pas renommer le dépôt sans
+# changer ce `base` — sinon toutes les ressources tombent à côté.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  construire:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # La clé publiable n'est pas un secret — c'est la sécurité au niveau des
+      # lignes qui protège. Mais sans elle le build produit une application qui
+      # ne se connecte à rien : autant échouer ici plutôt qu'en production.
+      - name: La configuration Supabase est présente
+        if: github.event_name != 'pull_request'
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          if [[ -z "$VITE_SUPABASE_URL" || -z "$VITE_SUPABASE_PUBLISHABLE_KEY" ]]; then
+            echo "::error::Renseigne VITE_SUPABASE_URL et VITE_SUPABASE_PUBLISHABLE_KEY dans les variables du dépôt."
+            exit 1
+          fi
+          if [[ ! "$VITE_SUPABASE_URL" =~ ^https://[^/]+\.supabase\.co/?$ ]]; then
+            echo "::error::VITE_SUPABASE_URL n'est pas une URL de projet Supabase valide."
+            exit 1
+          fi
+
+      # Le point qui ne se négocie pas : aucun écran joueur ne doit interroger la
+      # table des récompenses. La base le refuserait, mais une requête écrite est
+      # déjà une intention — on la refuse à la construction.
+      - name: Aucun écran joueur ne demande les récompenses
+        run: |
+          if grep -rn "from('rewards')" src/screens/Joueur.tsx src/components/ 2>/dev/null; then
+            echo "::error::Un écran côté joueur interroge la table rewards."
+            exit 1
+          fi
+          echo "Aucune requête interdite."
+
+      - name: Construire
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+
+      - name: Les pages légales sont bien publiées
+        run: |
+          for f in dist/legal/confidentialite.html dist/legal/mentions-legales.html; do
+            [[ -f "$f" ]] || { echo "::error::$f manquant — Google exige ces adresses."; exit 1; }
+          done
+          echo "Pages légales présentes."
+
+      - name: Déposer l'artefact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  publier:
+    if: github.event_name != 'pull_request'
+    needs: construire
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploiement.outputs.page_url }}
+    steps:
+      - name: Publier
+        id: deploiement
+        uses: actions/deploy-pages@v4

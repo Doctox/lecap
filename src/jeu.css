@@ -1,0 +1,597 @@
+/* Le Cap — la couche « jeu ».
+   index.css pose les couleurs et les formulaires ; ce fichier-ci pose le laiton,
+   les gemmes, la route et les fêtes. Tout ce qui fait qu'on a l'impression de
+   jouer et pas de remplir un formulaire.
+
+   Une règle tient toujours : rien de punitif. On célèbre, on ne sanctionne pas. */
+
+/* ===================================================== le blason du personnage */
+
+.blason {
+  position: relative;
+  padding: 20px 18px 18px;
+  margin-bottom: 14px;
+  border-radius: 20px;
+  border: 2px solid var(--or-sombre);
+  background:
+    radial-gradient(120% 90% at 50% -20%, rgba(233, 180, 76, 0.16), transparent 60%),
+    linear-gradient(180deg, #11485a, #0a3040);
+  box-shadow:
+    var(--ombre),
+    inset 0 1px 0 rgba(248, 210, 129, 0.35),
+    inset 0 0 40px rgba(0, 0, 0, 0.35);
+}
+
+/* Les quatre rivets de laiton, comme sur le cerclage du blason. */
+.blason::before,
+.blason::after {
+  content: '';
+  position: absolute;
+  top: 10px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--or-clair), var(--or-sombre));
+  box-shadow: 0 0 6px rgba(233, 180, 76, 0.5);
+}
+.blason::before {
+  left: 12px;
+}
+.blason::after {
+  right: 12px;
+}
+
+.blason-haut {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* L'anneau de progression du niveau, autour de la boussole. */
+.anneau {
+  position: relative;
+  flex: 0 0 92px;
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--or) calc(var(--p) * 1%),
+    rgba(255, 255, 255, 0.07) 0
+  );
+  padding: 5px;
+  box-shadow: 0 0 22px rgba(233, 180, 76, 0.28);
+  transition: background 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.anneau > .creux {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #062029;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.anneau img {
+  width: 82%;
+  height: 82%;
+  object-fit: contain;
+}
+
+/* La pastille de niveau, posée sur l'anneau. */
+.niveau-pastille {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 7px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  font-size: 0.92rem;
+  color: #3a2708;
+  background: linear-gradient(180deg, var(--or-clair), var(--or));
+  border: 2px solid #062029;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* La plaque gravée qui porte le rang. */
+.plaque {
+  display: inline-block;
+  padding: 5px 14px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #2e1f06;
+  background: linear-gradient(180deg, var(--or-clair), var(--or-sombre));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.xp-ligne {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.xp-ligne .nombre {
+  font-size: 2.6rem;
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--or);
+  text-shadow: 0 0 18px rgba(233, 180, 76, 0.4);
+}
+
+/* La barre crantée : on voit les paliers du niveau, pas une jauge lisse. */
+.jauge {
+  position: relative;
+  height: 14px;
+  margin-top: 14px;
+  border-radius: 999px;
+  background: #03151d;
+  border: 1px solid var(--bord);
+  overflow: hidden;
+}
+
+.jauge > i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--azur-sombre), var(--azur));
+  box-shadow: 0 0 14px rgba(63, 192, 204, 0.6);
+  transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Les crans, dessinés par-dessus. */
+.jauge::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0 calc(10% - 1px),
+    rgba(0, 0, 0, 0.45) calc(10% - 1px) 10%
+  );
+  pointer-events: none;
+}
+
+/* Les trois gemmes de statistiques. */
+.gemmes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.gemme-stat {
+  position: relative;
+  text-align: center;
+  padding: 12px 4px 10px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #0d3948, #072935);
+  border: 1px solid var(--bord);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.gemme-stat b {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--encre);
+}
+
+.gemme-stat span {
+  font-size: 0.66rem;
+  color: var(--encre-faible);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.gemme-stat .glyphe {
+  font-size: 1rem;
+  line-height: 1;
+  display: block;
+  margin-bottom: 2px;
+  opacity: 0.85;
+}
+
+/* ============================================== la route des paliers */
+
+.route {
+  position: relative;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  padding: 26px 14px 10px;
+  scroll-padding-inline: 14px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.route::-webkit-scrollbar {
+  display: none;
+}
+
+.etape {
+  position: relative;
+  flex: 0 0 76px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Le trait pointillé qui relie les coffres, comme un tracé sur une carte. */
+.etape:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 27px;
+  left: 50%;
+  width: 100%;
+  height: 3px;
+  background-image: linear-gradient(
+    90deg,
+    var(--bord) 0 6px,
+    transparent 6px 12px
+  );
+  background-size: 12px 3px;
+  z-index: 0;
+}
+
+.etape[data-etat='ouvert']:not(:last-child)::after,
+.etape[data-etat='atteint']:not(:last-child)::after {
+  background-image: linear-gradient(
+    90deg,
+    var(--or-sombre) 0 6px,
+    transparent 6px 12px
+  );
+}
+
+.coffre-noeud {
+  position: relative;
+  z-index: 1;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 1.35rem;
+  border: 2px solid var(--bord);
+  background: radial-gradient(circle at 35% 28%, #114254, #051d26);
+  color: var(--encre-faible);
+}
+
+/* Franchi et déjà remis : le coffre brille, calmement. */
+.etape[data-etat='ouvert'] .coffre-noeud {
+  border-color: var(--or-sombre);
+  color: var(--or);
+  background: radial-gradient(circle at 35% 28%, #3a2c0d, #171003);
+  box-shadow: 0 0 18px rgba(233, 180, 76, 0.4);
+}
+
+/* Franchi mais la surprise n'est pas encore tombée : il respire. */
+.etape[data-etat='atteint'] .coffre-noeud {
+  border-color: var(--or);
+  color: var(--or-clair);
+  background: radial-gradient(circle at 35% 28%, #4a3810, #1d1405);
+  animation: respire 2.6s ease-in-out infinite;
+}
+
+@keyframes respire {
+  0%,
+  100% {
+    box-shadow: 0 0 12px rgba(233, 180, 76, 0.35);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(233, 180, 76, 0.75);
+    transform: scale(1.06);
+  }
+}
+
+.etape-xp {
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: var(--encre-faible);
+  font-variant-numeric: tabular-nums;
+}
+
+.etape[data-etat='ouvert'] .etape-xp,
+.etape[data-etat='atteint'] .etape-xp {
+  color: var(--or);
+}
+
+/* Le petit marqueur « tu es ici ». */
+.etape .ici {
+  position: absolute;
+  top: -20px;
+  font-size: 0.86rem;
+  color: var(--azur);
+  animation: flotte 2s ease-in-out infinite;
+}
+
+@keyframes flotte {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(4px);
+  }
+}
+
+/* ===================================================== les quêtes à gemmes */
+
+.quete-jeu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  text-align: left;
+  padding: 13px 14px;
+  border-radius: 13px;
+  border: 1px solid var(--bord);
+  background: linear-gradient(180deg, #0d3846, #072935);
+  color: var(--encre);
+  transition:
+    transform 0.14s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.quete-jeu[data-cochee='true'] {
+  border-color: var(--azur);
+  box-shadow:
+    0 0 0 1px rgba(63, 192, 204, 0.35),
+    0 0 20px rgba(63, 192, 204, 0.18);
+  background: linear-gradient(180deg, #0f4655, #08313d);
+}
+
+.quete-jeu:active:not(:disabled) {
+  transform: scale(0.985);
+}
+
+/* La gemme change de couleur selon ce que la quête vaut : commune, rare, épique. */
+.gemme {
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  font-size: 0.78rem;
+  font-weight: 900;
+  color: #04202a;
+  clip-path: polygon(50% 0, 100% 27%, 100% 73%, 50% 100%, 0 73%, 0 27%);
+  background: linear-gradient(160deg, #6fd6e4, #1b8496);
+  filter: saturate(0.55) brightness(0.72);
+  transition: filter 0.25s ease;
+}
+
+.gemme[data-rarete='rare'] {
+  background: linear-gradient(160deg, #9db4ff, #3b53c4);
+}
+
+.gemme[data-rarete='epique'] {
+  background: linear-gradient(160deg, var(--or-clair), var(--or-sombre));
+}
+
+.quete-jeu[data-cochee='true'] .gemme {
+  filter: none;
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.28);
+}
+
+.quete-jeu .libelle {
+  flex: 1;
+  font-size: 0.95rem;
+}
+
+/* Le gain, dans une petite plaque de laiton. */
+.gain-plaque {
+  flex: 0 0 auto;
+  padding: 4px 9px;
+  border-radius: 7px;
+  font-size: 0.82rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--or);
+  background: rgba(233, 180, 76, 0.1);
+  border: 1px solid var(--or-sombre);
+}
+
+/* ============================================ le grand bouton d'action */
+
+.action-jeu {
+  position: relative;
+  width: 100%;
+  padding: 20px 18px;
+  border-radius: 15px;
+  font-size: 1.16rem;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #3a2708;
+  background: linear-gradient(180deg, #ffe09b, var(--or) 45%, var(--or-sombre));
+  border: 1px solid #7d4d0e;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -3px 0 rgba(120, 72, 10, 0.55),
+    0 6px 0 #6b4310,
+    0 10px 22px rgba(0, 0, 0, 0.45);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+.action-jeu:active:not(:disabled) {
+  transform: translateY(5px);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -2px 0 rgba(120, 72, 10, 0.5),
+    0 1px 0 #6b4310,
+    0 4px 10px rgba(0, 0, 0, 0.45);
+}
+
+.action-jeu .sous {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  opacity: 0.72;
+  text-transform: none;
+}
+
+/* ====================================== le gain qui s'envole, et la fête */
+
+.gain-flottant {
+  position: fixed;
+  left: 50%;
+  top: 38%;
+  transform: translateX(-50%);
+  z-index: 60;
+  font-size: 2.6rem;
+  font-weight: 900;
+  color: var(--or);
+  text-shadow: 0 0 24px rgba(233, 180, 76, 0.8);
+  pointer-events: none;
+  animation: envole 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes envole {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(26px) scale(0.7);
+  }
+  25% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1.15);
+  }
+  70% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-18px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-70px) scale(0.95);
+  }
+}
+
+.fete {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: radial-gradient(circle at 50% 45%, rgba(20, 74, 92, 0.9), rgba(3, 14, 19, 0.96));
+  animation: apparait 0.35s ease forwards;
+}
+
+@keyframes apparait {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fete-carte {
+  position: relative;
+  text-align: center;
+  max-width: 360px;
+  animation: surgit 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes surgit {
+  from {
+    opacity: 0;
+    transform: scale(0.82) translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Les rayons derrière le coffre. */
+.rayons {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 420px;
+  height: 420px;
+  margin: -210px 0 0 -210px;
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(233, 180, 76, 0.16) 0deg 7deg,
+    transparent 7deg 20deg
+  );
+  border-radius: 50%;
+  animation: tourne 26s linear infinite;
+  pointer-events: none;
+  mask-image: radial-gradient(circle, #000 25%, transparent 68%);
+}
+
+@keyframes tourne {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.fete-sceau {
+  position: relative;
+  width: 116px;
+  height: 116px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 3rem;
+  border: 3px solid var(--or);
+  background: radial-gradient(circle at 35% 28%, #5c4413, #1d1405);
+  box-shadow: 0 0 46px rgba(233, 180, 76, 0.65);
+  animation: respire 2.4s ease-in-out infinite;
+}
+
+.fete h2 {
+  font-size: 1.5rem;
+  color: var(--or-clair);
+  margin-bottom: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gain-flottant,
+  .fete,
+  .fete-carte,
+  .rayons,
+  .fete-sceau,
+  .etape[data-etat='atteint'] .coffre-noeud,
+  .etape .ici {
+    animation: none !important;
+  }
+}
+
+/* Les numéros d'aide : même carte de quête, mais c'est un lien qui appelle. */
+a.quete-jeu {
+  text-decoration: none;
+}
+
+a.quete-jeu .libelle b {
+  font-weight: 700;
+}
+
+/* Le portrait du rang remplit le disque ; la boussole de repli, elle, respire. */
+.anneau img.portrait {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}

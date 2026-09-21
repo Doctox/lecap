@@ -1,0 +1,33 @@
+# Clés et secrets — ne doivent jamais partir sur le dépôt
+.env
+.env.*
+!.env.example
+
+# Documents de travail : ils décrivent la situation d'une personne réelle.
+# Le dépôt est public (GitHub Pages l'exige sur le plan gratuit) : ces deux-là
+# restent sur le disque et dans le dossier du clavardage, jamais en ligne.
+BRIEF-V1.md
+MESSAGE-AU-JOUEUR.md
+
+# Dépendances et build
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Supabase local
+supabase/.temp/
+supabase/.branches/
+
+# Éditeurs et système
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Journaux
+*.log
+npm-debug.log*
+pnpm-debug.log*
