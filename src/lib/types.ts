@@ -57,6 +57,12 @@ export type TierEvent = {
   reached_at: string
   celebrated_at: string | null
   delivered_at: string | null
+  /**
+   * Copie du contenu, écrite par le binôme au moment de la remise. C'est le
+   * SEUL chemin par lequel le joueur apprend ce qu'il y avait dans un coffre :
+   * la table `rewards` ne lui est jamais ouverte, même après coup.
+   */
+  contenu_revele: string | null
 }
 
 /** Réservé au binôme. Aucune requête depuis un écran joueur. */

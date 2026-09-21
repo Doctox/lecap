@@ -45,7 +45,11 @@ export default function Bienvenue({ userId, pseudoExistant, onPret, enAttente }:
       // supprimé côté serveur. Rester connecté ne mène nulle part : on sort.
       if (error.code === '23503') {
         setErreur('Ta session a expiré. On te reconnecte…')
-        await supabase.auth.signOut()
+        // scope 'local' : on jette le jeton SANS appeler le serveur. Une
+        // déconnexion normale demande au serveur de révoquer la session — mais
+        // ici le compte n'existe plus, donc cet appel échouerait et laisserait
+        // la personne bloquée avec son jeton mort.
+        await supabase.auth.signOut({ scope: 'local' })
         return
       }
       return setErreur("Le pseudo n'a pas pu être enregistré.")

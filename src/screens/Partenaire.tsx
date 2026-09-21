@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { Journal } from '../components/Journal'
+import { CoffreIcone, type EtatCoffre } from '../components/CoffreIcone'
+import { Repartition } from '../components/Repartition'
 import { avatarPour, levelFromXp, rankLabel } from '../lib/levels'
 import type { Bonus, Day, Pact, Progress, Reward, Situation, Tier, TierEvent } from '../lib/types'
 
@@ -26,6 +28,7 @@ export default function Partenaire({ pact, onQuitter }: Props) {
   const [pseudoJoueur, setPseudoJoueur] = useState<string | null>(null)
   const [chargement, setChargement] = useState(true)
   const [onglet, setOnglet] = useState<NomOnglet>('valider')
+  const [vue, setVue] = useState<'valider' | 'pouvoir'>('valider')
 
   const charger = useCallback(async () => {
     const [p, s, t, j, r, b, ev, prof] = await Promise.all([
@@ -78,27 +81,56 @@ export default function Partenaire({ pact, onQuitter }: Props) {
 
       <div className="panneau">
         {onglet === 'valider' && (
-          <>
-            {aValider.length === 0 ? (
-              <div className="fenetre">
-                <h2>À valider</h2>
+          <div className="fenetre">
+            <h2>Ton tour</h2>
+
+            {/* Arbitrage et pouvoir partagent la même fenêtre : deux onglets
+                internes plutôt que deux encadrés qui allongent l'écran. */}
+            <div className="onglets-fenetre" role="tablist">
+              <button
+                className="onglet-fenetre"
+                role="tab"
+                aria-selected={vue === 'valider'}
+                onClick={() => setVue('valider')}
+              >
+                À valider
+                {aValider.length > 0 && (
+                  <span className="compteur">{aValider.length}</span>
+                )}
+              </button>
+              <button
+                className="onglet-fenetre"
+                role="tab"
+                aria-selected={vue === 'pouvoir'}
+                onClick={() => setVue('pouvoir')}
+              >
+                Ton pouvoir
+                {enReserve.length > 0 && (
+                  <span className="compteur">{enReserve.length}</span>
+                )}
+              </button>
+            </div>
+
+            {vue === 'valider' ? (
+              aValider.length === 0 ? (
                 <p className="faible" style={{ marginBottom: 0 }}>
                   Rien en attente. Tout ce qu’il a déclaré est arbitré.
                 </p>
-              </div>
+              ) : (
+                aValider.map((j) => (
+                  <Arbitrage
+                    key={j.id}
+                    jour={j}
+                    bareme={bareme}
+                    pact={pact}
+                    onFait={charger}
+                  />
+                ))
+              )
             ) : (
-              aValider.map((j) => (
-                <Arbitrage
-                  key={j.id}
-                  jour={j}
-                  bareme={bareme}
-                  pact={pact}
-                  onFait={charger}
-                />
-              ))
+              <BonusSurprise pact={pact} enReserve={enReserve} onFait={charger} />
             )}
-            <BonusSurprise pact={pact} enReserve={enReserve} onFait={charger} />
-          </>
+          </div>
         )}
 
         {onglet === 'coffres' && (
@@ -137,9 +169,11 @@ export default function Partenaire({ pact, onQuitter }: Props) {
           picto="🎁"
           nom="Tes coffres"
           pastille={
-            paliers.length > recompenses.length
-              ? String(paliers.length - recompenses.length)
-              : undefined
+            aRemettre.length > 0
+              ? String(aRemettre.length)
+              : paliers.length > recompenses.length
+                ? String(paliers.length - recompenses.length)
+                : undefined
           }
           onClick={() => setOnglet('coffres')}
         />
@@ -333,9 +367,7 @@ function Arbitrage({
   }
 
   return (
-    <div className="fenetre">
-      <h2>À valider</h2>
-
+    <div className="bloc-jour">
       <div className="entete-jour">
         <b>
           {new Date(jour.day).toLocaleDateString('fr-FR', {
@@ -447,9 +479,7 @@ function BonusSurprise({
   }
 
   return (
-    <div className="fenetre">
-      <h2>Ton pouvoir</h2>
-
+    <div>
       {!ouvert ? (
         <>
           <p className="faible" style={{ marginTop: 0 }}>
@@ -543,6 +573,11 @@ function BonusSurprise({
 
 /* ====================================================================== */
 
+/**
+ * Tout ce qui touche aux coffres, au même endroit : les préparer, voir lesquels
+ * sont prêts, et remettre ceux qui sont tombés. Un coffre porte son état et son
+ * action — il n'y a plus à chercher sur un autre onglet.
+ */
 function Coffres({
   pact,
   paliers,
@@ -558,103 +593,243 @@ function Coffres({
   prochain: number | null
   onFait: () => void
 }) {
-  const [edite, setEdite] = useState<number | null>(null)
-  const [texte, setTexte] = useState('')
-  const [occupe, setOccupe] = useState(false)
+  const [choisi, setChoisi] = useState<number | null>(null)
+  const [reglage, setReglage] = useState(false)
 
-  function ouvrir(niveau: number) {
-    setEdite(niveau)
-    setTexte(recompenses.find((c) => c.tier_level === niveau)?.content ?? '')
+  if (reglage) {
+    return (
+      <Repartition
+        pactId={pact.id}
+        paliers={paliers}
+        evenements={evenements}
+        onRetour={() => setReglage(false)}
+        onFait={() => {
+          setReglage(false)
+          onFait()
+        }}
+      />
+    )
   }
 
-  async function enregistrer() {
-    if (edite === null) return
+  function etatDe(niveau: number): EtatCoffre {
+    const ev = evenements.find((e) => e.tier_level === niveau)
+    if (ev?.delivered_at) return 'remis'
+    if (ev) return 'a_remettre'
+    return recompenses.some((r) => r.tier_level === niveau) ? 'pret' : 'vide'
+  }
+
+  const palier = paliers.find((t) => t.level === choisi)
+  if (palier) {
+    return (
+      <CoffreDetail
+        pact={pact}
+        palier={palier}
+        etat={etatDe(palier.level)}
+        prepare={recompenses.find((r) => r.tier_level === palier.level) ?? null}
+        evenement={evenements.find((e) => e.tier_level === palier.level) ?? null}
+        onRetour={() => setChoisi(null)}
+        onFait={() => {
+          setChoisi(null)
+          onFait()
+        }}
+      />
+    )
+  }
+
+  return (
+    <div className="fenetre">
+      <h2>Tes coffres</h2>
+      <button
+        className="fenetre-roue"
+        onClick={() => setReglage(true)}
+        aria-label="Régler la répartition des coffres"
+        title="Régler la répartition"
+      >
+        ⚙
+      </button>
+
+
+
+      <div className="coffres-grille">
+        {paliers.map((t) => {
+          const etat = etatDe(t.level)
+          const prepare = recompenses.find((r) => r.tier_level === t.level)
+          return (
+            <button
+              key={t.level}
+              className="coffre-carte"
+              data-etat={etat}
+              data-urgent={etat === 'vide' && t.level === prochain}
+              onClick={() => setChoisi(t.level)}
+            >
+              <CoffreIcone etat={etat} />
+              <span className="niveau">Niveau {t.level}</span>
+              <span className="titre">{t.label}</span>
+              <span className={etat === 'vide' ? 'a-preparer' : 'contenu'}>
+                {etat === 'a_remettre'
+                  ? 'À lui remettre'
+                  : etat === 'remis'
+                    ? 'Remis'
+                    : prepare
+                      ? prepare.content
+                      : t.level === prochain
+                        ? 'Le prochain — à préparer'
+                        : 'À préparer'}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+/* ====================================================================== */
+
+/**
+ * Le détail d'un coffre. Selon son état, on le remplit ou on le remet.
+ *
+ * Au moment de la remise, le contenu est RECOPIÉ dans l'évènement : c'est le
+ * seul chemin par lequel le joueur apprendra ce qu'il y avait dedans. La table
+ * `rewards` ne s'ouvre pas à lui, même après coup.
+ */
+function CoffreDetail({
+  pact,
+  palier,
+  etat,
+  prepare,
+  evenement,
+  onRetour,
+  onFait,
+}: {
+  pact: Pact
+  palier: Tier
+  etat: EtatCoffre
+  prepare: Reward | null
+  evenement: TierEvent | null
+  onRetour: () => void
+  onFait: () => void
+}) {
+  const [texte, setTexte] = useState(prepare?.content ?? '')
+  const [garderSecret, setGarderSecret] = useState(false)
+  const [occupe, setOccupe] = useState(false)
+
+  async function sceller() {
     const contenu = texte.trim()
     if (!contenu) return
     setOccupe(true)
     await supabase.from('rewards').upsert(
       {
         pact_id: pact.id,
-        tier_level: edite,
+        tier_level: palier.level,
         content: contenu,
         updated_at: new Date().toISOString(),
       },
       { onConflict: 'pact_id,tier_level' },
     )
     setOccupe(false)
-    setEdite(null)
     onFait()
   }
 
-  const enCours = paliers.find((t) => t.level === edite)
-
-  if (enCours) {
-    return (
-      <div className="fenetre">
-        <h2>Coffre du niveau {enCours.level}</h2>
-        <p className="faible" style={{ marginTop: 0 }}>
-          {enCours.label} — il connaît le niveau, jamais ce qu’il y a dedans.
-        </p>
-        <textarea
-          value={texte}
-          onChange={(e) => setTexte(e.target.value.slice(0, 1000))}
-          placeholder="Ce que tu lui prépares…"
-          autoFocus
-        />
-        <button
-          className="action-jeu"
-          onClick={enregistrer}
-          disabled={occupe || !texte.trim()}
-          style={{ marginTop: 12 }}
-        >
-          Sceller le coffre
-        </button>
-        <button className="fantome" onClick={() => setEdite(null)}>
-          ← Retour
-        </button>
-      </div>
-    )
+  async function remettre() {
+    if (!evenement) return
+    setOccupe(true)
+    await supabase
+      .from('tier_events')
+      .update({
+        delivered_at: new Date().toISOString(),
+        contenu_revele: garderSecret ? null : (prepare?.content ?? null),
+      })
+      .eq('id', evenement.id)
+    setOccupe(false)
+    onFait()
   }
 
-  const manquants = paliers.length - recompenses.length
-
   return (
-    <div className="fenetre">
-      <h2>Tes coffres</h2>
-      <p className="faible" style={{ marginTop: 0 }}>
-        {manquants > 0
-          ? `${manquants} coffre${manquants > 1 ? 's' : ''} encore vide${manquants > 1 ? 's' : ''}.`
-          : 'Tous les coffres sont prêts.'}{' '}
-        Cette liste ne quitte pas ton écran : son compte n’a pas le droit de la
-        lire.
-      </p>
+    <div className={etat === 'a_remettre' ? 'fenetre carte-or' : 'fenetre'}>
+      <h2>Niveau {palier.level}</h2>
 
-      <div className="coffres-grille">
-        {paliers.map((t) => {
-          const rempli = recompenses.find((c) => c.tier_level === t.level)
-          const tombe = evenements.some((e) => e.tier_level === t.level)
-          return (
-            <button
-              key={t.level}
-              className="coffre-carte"
-              data-rempli={Boolean(rempli)}
-              data-urgent={!rempli && t.level === prochain}
-              onClick={() => ouvrir(t.level)}
-            >
-              <span className="coffre-glyphe">{tombe ? '🔓' : rempli ? '🎁' : '🔒'}</span>
-              <span className="niveau">Niveau {t.level}</span>
-              <span className="titre">{t.label}</span>
-              {rempli ? (
-                <span className="contenu">{rempli.content}</span>
-              ) : (
-                <span className="a-preparer">
-                  {t.level === prochain ? 'Le prochain — à préparer' : 'À préparer'}
-                </span>
-              )}
-            </button>
-          )
-        })}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12 }}>
+        <CoffreIcone etat={etat} taille={54} />
+        <div>
+          <b style={{ color: 'var(--or)' }}>{palier.label}</b>
+          <p className="faible" style={{ margin: 0 }}>
+            {etat === 'a_remettre'
+              ? 'Il l’a franchi. Il sait qu’un coffre est tombé, pas ce qu’il y a dedans.'
+              : etat === 'remis'
+                ? 'Déjà remis.'
+                : 'Il connaît le niveau, jamais le contenu.'}
+          </p>
+        </div>
       </div>
+
+      {etat === 'remis' ? (
+        <p className="jour-mot" style={{ marginLeft: 0 }}>
+          {evenement?.contenu_revele
+            ? `« ${evenement.contenu_revele} »`
+            : 'Tu as choisi de n’en rien écrire. C’est resté entre vous.'}
+        </p>
+      ) : etat === 'a_remettre' ? (
+        <>
+          {prepare ? (
+            <p className="jour-mot" style={{ marginLeft: 0 }}>« {prepare.content} »</p>
+          ) : (
+            <p className="faible">
+              Tu n&rsquo;avais rien préparé pour ce palier. Tu peux le remettre quand
+              même — l&rsquo;application ne te jugera pas plus qu&rsquo;elle ne le
+              juge, lui.
+            </p>
+          )}
+
+          <button
+            className="quete-jeu"
+            data-cochee={garderSecret}
+            onClick={() => setGarderSecret((v) => !v)}
+            type="button"
+            style={{ marginTop: 12 }}
+          >
+            <span className="gemme">{garderSecret ? '✓' : ''}</span>
+            <span className="libelle">
+              Ne rien écrire dans son journal — ça reste entre vous
+            </span>
+          </button>
+
+          <button
+            className="action-jeu"
+            onClick={remettre}
+            disabled={occupe}
+            style={{ marginTop: 14 }}
+          >
+            Lui offrir
+            <span className="sous">
+              {garderSecret || !prepare
+                ? 'Rien ne sera écrit dans son journal'
+                : 'Son journal en gardera la trace'}
+            </span>
+          </button>
+        </>
+      ) : (
+        <>
+          <textarea
+            value={texte}
+            onChange={(e) => setTexte(e.target.value.slice(0, 1000))}
+            placeholder="Ce que tu lui prépares…"
+            autoFocus
+          />
+          <button
+            className="action-jeu"
+            onClick={sceller}
+            disabled={occupe || !texte.trim()}
+            style={{ marginTop: 12 }}
+          >
+            Sceller le coffre
+          </button>
+        </>
+      )}
+
+      <button className="fantome" onClick={onRetour}>
+        ← Tous les coffres
+      </button>
     </div>
   )
 }

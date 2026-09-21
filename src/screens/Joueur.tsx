@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { Route } from '../components/Route'
 import { Journal } from '../components/Journal'
-import { avatarPour, levelFromXp, rankLabel } from '../lib/levels'
+import { avatarPour, levelFromXp, rankLabel, xpForLevel } from '../lib/levels'
+import { CoffreIcone } from '../components/CoffreIcone'
 import { gameDay } from '../lib/types'
 import type { Bonus, Day, Pact, Progress, Situation, Tier, TierEvent } from '../lib/types'
 
@@ -26,6 +27,7 @@ export default function Joueur({ pact, onQuitter }: Props) {
   const [gain, setGain] = useState<number | null>(null)
   const [fete, setFete] = useState<TierEvent | null>(null)
   const [onglet, setOnglet] = useState<NomOnglet>('jour')
+  const [coffreOuvert, setCoffreOuvert] = useState<number | null>(null)
 
   const aujourdhui = gameDay(pact.day_rollover_hour)
   const jourDuJour = jours.find((j) => j.day === aujourdhui) ?? null
@@ -125,19 +127,19 @@ export default function Joueur({ pact, onQuitter }: Props) {
 
         {onglet === 'route' && (
           <>
-            <Route paliers={paliers} coffres={coffres} niveau={progres?.level ?? 1} />
-            {enAttente.length > 0 && (
-              <div className="fenetre">
-                <h2>À réclamer</h2>
-                <p className="doux" style={{ marginBottom: 0 }}>
-                  {enAttente.length > 1
-                    ? `${enAttente.length} surprises t’attendent`
-                    : 'Une surprise t’attend'}{' '}
-                  — coffre{enAttente.length > 1 ? 's' : ''} du niveau{' '}
-                  {enAttente.map((c) => c.tier_level).join(', ')}. C’est ton binôme
-                  qui décide quand et comment.
-                </p>
-              </div>
+            <Route
+              paliers={paliers}
+              coffres={coffres}
+              niveau={progres?.level ?? 1}
+              choisi={coffreOuvert}
+              onChoisir={setCoffreOuvert}
+            />
+            {coffreOuvert !== null && (
+              <DetailCoffre
+                palier={paliers.find((t) => t.level === coffreOuvert)}
+                evenement={coffres.find((c) => c.tier_level === coffreOuvert)}
+                xp={xp}
+              />
             )}
           </>
         )}
@@ -489,6 +491,73 @@ function JourDeclare({ jour, bareme }: { jour: Day; bareme: Situation[] }) {
           « {jour.note} »
         </p>
       )}
+    </div>
+  )
+}
+
+/* ====================================================================== */
+
+/**
+ * Ce qu'un coffre a à dire, selon où il en est. Verrouillé, il ne dit que la
+ * distance — jamais son contenu, qui n'est de toute façon pas descendu jusqu'ici.
+ */
+function DetailCoffre({
+  palier,
+  evenement,
+  xp,
+}: {
+  palier?: Tier
+  evenement?: TierEvent
+  xp: number
+}) {
+  const remis = Boolean(evenement?.delivered_at)
+
+  // Un coffre déjà offert s'ouvre à l'écran quand on le touche : il part fermé,
+  // le couvercle bascule, et un éclat passe. Voir ce qu'on a reçu mérite mieux
+  // qu'un texte qui apparaît.
+  const [ouvre, setOuvre] = useState(false)
+  useEffect(() => {
+    if (!remis) return
+    setOuvre(false)
+    const t = window.setTimeout(() => setOuvre(true), 120)
+    return () => window.clearTimeout(t)
+  }, [remis, palier?.level])
+
+  if (!palier) return null
+
+  const manque = Math.max(0, xpForLevel(palier.level) - xp)
+  const etat = remis ? 'remis' : evenement ? 'a_remettre' : 'vide'
+
+  return (
+    <div className={remis ? 'fenetre' : evenement ? 'fenetre carte-or' : 'fenetre'}>
+      <h2>Niveau {palier.level}</h2>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+        <span className="coffre-ouverture" data-ouvre={remis && ouvre}>
+          <CoffreIcone etat={etat} taille={54} ouvertForce={remis ? ouvre : undefined} />
+        </span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <b style={{ color: 'var(--or)' }}>{palier.label}</b>
+
+          {remis ? (
+            <p className="jour-mot" style={{ marginLeft: 0, marginTop: 6 }}>
+              {evenement?.contenu_revele
+                ? `« ${evenement.contenu_revele} »`
+                : 'Ton binôme a préféré que ça reste entre vous.'}
+            </p>
+          ) : evenement ? (
+            <p className="doux" style={{ margin: '6px 0 0' }}>
+              Franchi. Une surprise t’attend — c’est ton binôme qui choisit le
+              moment.
+            </p>
+          ) : (
+            <p className="faible" style={{ margin: '6px 0 0' }}>
+              Encore <b style={{ color: 'var(--or)' }}>{manque} XP</b>. Ce qu’il y a
+              dedans, tu ne le sauras qu’en l’ouvrant.
+            </p>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

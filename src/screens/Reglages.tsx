@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { Installation } from '../components/Installation'
 import type { Pact } from '../lib/types'
 
 // « Suppression du pacte et de tout son contenu en un geste, par l'un ou
@@ -67,6 +68,8 @@ export default function Reglages({ pact, onRetour, onEfface }: Props) {
           {pact.join_code}
         </div>
       </div>
+
+      <Installation />
 
       <div className="carte">
         <h2>Se déconnecter</h2>

@@ -83,9 +83,14 @@ export function Journal({ jours, bonus, bareme, paliers, coffres, avecMots }: Pr
               )}
 
               {palier && (
-                <p className="jour-coffre">
-                  ★ Coffre du niveau {palier.level} — {palier.label}
-                </p>
+                <>
+                  <p className="jour-coffre">
+                    ★ Coffre du niveau {palier.level} — {palier.label}
+                  </p>
+                  {coffre?.contenu_revele && (
+                    <p className="jour-mot">🎁 {coffre.contenu_revele}</p>
+                  )}
+                </>
               )}
 
               {avecMots && j.note && <p className="jour-mot">« {j.note} »</p>}

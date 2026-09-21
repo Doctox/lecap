@@ -597,13 +597,37 @@
   transform: scale(0.97);
 }
 
-/* Rempli : le coffre est prêt, il brille. */
-.coffre-carte[data-rempli='true'] {
+/* Prêt : le coffre attend son heure. */
+.coffre-carte[data-etat='pret'] {
   border-style: solid;
   border-color: var(--or-sombre);
   background: linear-gradient(180deg, #2a2009, #14100a);
   color: var(--encre-doux);
   box-shadow: 0 0 16px rgba(233, 180, 76, 0.22);
+}
+
+/* Tombé mais pas encore remis : c'est le seul qui appelle. */
+.coffre-carte[data-etat='a_remettre'] {
+  border-style: solid;
+  border-color: var(--or);
+  background: linear-gradient(180deg, #3d2e0a, #1d1505);
+  color: var(--encre);
+  box-shadow: 0 0 22px rgba(233, 180, 76, 0.45);
+  animation: respire 2.6s ease-in-out infinite;
+}
+
+.coffre-carte[data-etat='a_remettre'] .contenu {
+  font-style: normal;
+  font-weight: 800;
+  color: var(--or-clair);
+}
+
+/* Remis : il a vécu, il se range. */
+.coffre-carte[data-etat='remis'] {
+  border-style: solid;
+  border-color: #2c4954;
+  background: linear-gradient(180deg, #0c3240, #072630);
+  color: var(--encre-faible);
 }
 
 /* Celui qui approche sans rien dedans : on le signale, sans alarme. */
@@ -742,4 +766,235 @@
 
 .entete-jour b {
   font-size: 0.92rem;
+}
+
+/* Une journée à arbitrer, dans la fenêtre partagée : un trait de séparation
+   quand il y en a plusieurs, rien de plus. */
+.bloc-jour + .bloc-jour {
+  border-top: 1px solid var(--bord);
+  padding-top: 16px;
+  margin-top: 16px;
+}
+
+/* La roue crantée d'une fenêtre : posée dans le coin, elle n'entre pas en
+   concurrence avec l'étiquette du titre. */
+.fenetre-roue {
+  position: absolute;
+  top: -13px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2px solid var(--or-sombre);
+  background: linear-gradient(180deg, #123f4d, #0a2d38);
+  color: var(--or);
+  font-size: 0.95rem;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.fenetre-roue:active {
+  transform: scale(0.94);
+}
+
+/* Une ligne de réglage de coffre : le nom sur le dessus, le niveau en dessous. */
+.ligne-coffre {
+  padding: 11px 12px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  border: 2px solid var(--or-sombre);
+  background: linear-gradient(180deg, #123f4d, #0a2d38);
+}
+
+.ligne-coffre-haut {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.ligne-coffre-haut input {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 10px;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.ligne-coffre-bas {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 9px;
+}
+
+.ligne-coffre .retirer {
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  border: 1px solid var(--bord);
+  background: transparent;
+  color: var(--encre-faible);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.ligne-coffre .retirer:disabled {
+  opacity: 0.3;
+}
+
+/* Une marche à suivre : numérotée, aérée, lisible d'un coup d'oeil. */
+.marche-a-suivre {
+  margin: 14px 0 0;
+  padding-left: 22px;
+  color: var(--encre-doux);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.marche-a-suivre li {
+  margin-bottom: 9px;
+}
+
+.marche-a-suivre li::marker {
+  color: var(--or);
+  font-weight: 900;
+}
+
+.marche-a-suivre b {
+  color: var(--or);
+}
+
+/* La route se parcourt au doigt comme a la souris. */
+
+.route-cadre {
+  position: relative;
+  margin: 0 -8px;
+}
+
+/* Les fondus sur les bords disent qu'il y a quelque chose au-dela, sans
+   ecrire « faites glisser ». Ils laissent passer les clics. */
+.route-cadre::before,
+.route-cadre::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 26px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.route-cadre::before {
+  left: 0;
+  background: linear-gradient(90deg, #0d3a48, transparent);
+}
+
+.route-cadre::after {
+  right: 0;
+  background: linear-gradient(270deg, #0d3a48, transparent);
+}
+
+.route {
+  cursor: grab;
+  scroll-snap-type: x proximity;
+  touch-action: pan-x;
+}
+
+.route.glisse {
+  cursor: grabbing;
+  scroll-behavior: auto;
+  user-select: none;
+}
+
+.etape {
+  scroll-snap-align: center;
+}
+
+/* Le noeud accueille desormais un coffre dessine, pas un caractere. */
+.coffre-noeud {
+  padding: 0;
+}
+
+/* Le coffre qu'on regarde : un cerclage, pour savoir lequel parle. */
+.etape[data-choisi='true'] .coffre-noeud {
+  border-color: var(--or-clair);
+  box-shadow: 0 0 0 3px rgba(248, 210, 129, 0.35);
+}
+
+.coffre-noeud {
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.12s ease;
+}
+
+.coffre-noeud:active {
+  transform: scale(0.94);
+}
+
+/* L'ouverture d'un coffre : un eclat qui part du couvercle et s'efface. */
+.coffre-ouverture {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
+.coffre-ouverture::before {
+  content: '';
+  position: absolute;
+  inset: -22px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(248, 210, 129, 0.85), transparent 62%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.coffre-ouverture[data-ouvre='true']::before {
+  animation: eclat-coffre 0.9s ease-out forwards;
+}
+
+@keyframes eclat-coffre {
+  0% {
+    opacity: 0;
+    transform: scale(0.35);
+  }
+  35% {
+    opacity: 0.95;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+/* Le coffre sursaute au moment ou le couvercle lache. */
+.coffre-ouverture[data-ouvre='true'] svg {
+  animation: sursaut-coffre 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes sursaut-coffre {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  30% {
+    transform: translateY(-5px) scale(1.09);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coffre-ouverture[data-ouvre='true']::before,
+  .coffre-ouverture[data-ouvre='true'] svg {
+    animation: none !important;
+  }
 }
