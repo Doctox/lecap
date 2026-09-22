@@ -317,6 +317,7 @@ function Declarer({
   const [cochees, setCochees] = useState<string[]>([])
   const [mot, setMot] = useState('')
   const [vue, setVue] = useState<'quetes' | 'mot'>('quetes')
+  const [infoManette, setInfoManette] = useState(false)
   const [occupe, setOccupe] = useState(false)
   const [erreur, setErreur] = useState<string | null>(null)
 
@@ -439,10 +440,32 @@ function Declarer({
         </button>
       </div>
 
-      <p className="faible apres-manette">
-        <b>CAP</b>, c'est la journée tenue. <b>EXIT</b>, c'est celle où ça n'a pas
-        tenu — aucun XP ne se retire, la série repart, le reste est acquis.
-      </p>
+      {/* L'explication ne s'impose pas sous les boutons : elle attend qu'on la
+          demande. Elle sert le premier jour, pas les trois cents suivants. */}
+      <div className="apres-manette">
+        <button
+          className="info"
+          type="button"
+          aria-expanded={infoManette}
+          aria-label="Que font ces deux boutons ?"
+          onClick={() => setInfoManette((v) => !v)}
+          onMouseEnter={() => setInfoManette(true)}
+        >
+          i
+        </button>
+      </div>
+
+      {infoManette && (
+        <div className="explication" style={{ marginTop: 12 }}>
+          <p>
+            <b>CAP</b> — la journée tenue. Tu empoches ton XP.
+          </p>
+          <p>
+            <b>EXIT</b> — celle où ça n&rsquo;a pas tenu. Aucun XP ne se retire,
+            la série repart, le reste est acquis.
+          </p>
+        </div>
+      )}
     </>
   )
 }

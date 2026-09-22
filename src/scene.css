@@ -550,10 +550,12 @@
   cursor: default;
 }
 
-/* De la place sous la manette pour les légendes. */
+/* De la place sous la manette, et le ⓘ centré : .info est un bloc, donc
+   text-align ne le déplaçait pas. */
 .manette + .apres-manette {
-  margin-top: 26px;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
 }
 
 
