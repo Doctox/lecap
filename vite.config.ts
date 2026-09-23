@@ -39,6 +39,10 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,webp,woff2}'],
         // Aucune donnée de jeu en cache : la coquille seulement.
         navigateFallback: '/lecap/index.html',
+        // …sauf la présentation, qui est une vraie page et non une route de
+        // l'application. Sans cette exception, quiconque a déjà installé Le Cap
+        // recevrait la coquille du jeu en tapant /lecap/presentation.
+        navigateFallbackDenylist: [/^\/lecap\/presentation/],
         runtimeCaching: [],
       },
     }),
