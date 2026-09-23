@@ -492,6 +492,7 @@ b { font-weight: 600; color: var(--encre); }
   display: grid; grid-template-columns: 30px 1fr; gap: 13px;
   align-items: start; font-size: 0.94rem; color: var(--encre-doux);
 }
+.etapes li > span { min-width: 0; }
 .etapes li::before {
   content: counter(pas);
   font-family: var(--chiffre); font-size: 0.8rem;
@@ -726,18 +727,24 @@ footer a { color: var(--encre-doux); }
         <div class="ecran-jeu" id="vue-barre" hidden>
           <div class="scene">
             <div class="scene-haut">
-              <div class="portrait" style="width:56px;height:56px">
-                <img src="../avatars/rang-04.webp" alt="Portrait du joueur">
+              <div class="portrait">
+                <img src="../avatars/rang-04.webp" alt="Portrait du rang Timonier">
+                <span class="plaque">NIV. 4</span>
               </div>
               <div class="ardoise">
-                <div class="rang" style="font-size:1.05rem">Bastien · Timonier</div>
+                <div class="rang">Timonier</div>
+                <div class="xp-total">Bastien · 12 XP</div>
                 <div class="ligne-xp">
                   <span class="etiquette">XP</span>
                   <div class="jauge"><i style="width:67%"></i></div>
-                  <span class="xp-total">12</span>
                 </div>
-                <p class="compte"><b>6</b> jours d'affilée · <b>1</b> quête à trancher</p>
+                <p class="compte"><b>6</b> jours d'affilée · record <b>6</b> · <b>6</b> journées à zéro</p>
               </div>
+            </div>
+
+            <div class="dialogue">
+              Bastien a déclaré <b>1 journée</b>. À toi d'arbitrer ce que ça
+              valait.
             </div>
           </div>
 
@@ -963,10 +970,10 @@ footer a { color: var(--encre-doux); }
     <h2 style="font-size:clamp(1.45rem,3.6vw,2rem)">Quatre minutes, à deux</h2>
 
     <ol class="etapes">
-      <li><b>Celui qui garde le cap</b> ouvre la partie et reçoit un code de six caractères.</li>
-      <li>Il le transmet à <b>celui qui tient la barre</b>, qui le saisit de son côté.</li>
-      <li>Le binôme remplit les sept coffres — cinq minutes, une fois pour toutes.</li>
-      <li>Le soir même, première journée déclarée. <b>Le niveau 2 tombe au premier XP.</b></li>
+      <li><span><b>Celui qui garde le cap</b> ouvre la partie et reçoit un code de six caractères.</span></li>
+      <li><span>Le code passe à <b>celui qui tient la barre</b>, qui le saisit de son côté.</span></li>
+      <li><span>Le binôme remplit les sept coffres — cinq minutes, une fois pour toutes.</span></li>
+      <li><span>Le soir même, première journée déclarée. <b>Le niveau 2 tombe au premier XP.</b></span></li>
     </ol>
 
     <a class="adresse" href="../">Ouvrir Le Cap</a>
