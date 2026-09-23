@@ -114,7 +114,7 @@ export default function Partenaire({ pact, onQuitter }: Props) {
             {vue === 'valider' ? (
               aValider.length === 0 ? (
                 <p className="faible" style={{ marginBottom: 0 }}>
-                  Rien en attente. Tout ce qu’il a déclaré est arbitré.
+                  Rien en attente. Tout ce qui a été déclaré est arbitré.
                 </p>
               ) : (
                 aValider.map((j) => (
@@ -241,7 +241,7 @@ function SceneBarre({
   const portrait = sansAvatar
     ? `${import.meta.env.BASE_URL}logo-320.png`
     : avatarPour(niveau.level)
-  const lui = pseudoJoueur ?? 'Il'
+  const lui = pseudoJoueur ?? 'Ton binôme'
 
   // Ce que la boîte de dialogue lui dit, par ordre d'urgence.
   const message =
@@ -483,8 +483,8 @@ function BonusSurprise({
       {!ouvert ? (
         <>
           <p className="faible" style={{ marginTop: 0 }}>
-            De +1 à +5 XP, sans prévenir, quand tu trouves qu’il a traversé
-            quelque chose de difficile.
+            De +1 à +5 XP, sans prévenir, quand tu trouves que la journée a
+            été difficile à traverser.
           </p>
           <button className="discret" onClick={() => setOuvert(true)}>
             Accorder un bonus surprise
@@ -507,7 +507,7 @@ function BonusSurprise({
           <textarea
             value={mot}
             onChange={(e) => setMot(e.target.value.slice(0, 500))}
-            placeholder="Un mot, s’il le mérite. Il ne le lira qu’au moment où tu le décides."
+            placeholder="Un mot, si ça le mérite. Il ne sera lu qu’au moment où tu le décides."
           />
 
           <div className="onglets-fenetre" style={{ marginTop: 12 }}>
@@ -535,7 +535,7 @@ function BonusSurprise({
           >
             Accorder +{points} XP
             <span className="sous">
-              {toutDeSuite ? 'Il le verra tout de suite' : 'Invisible pour lui'}
+              {toutDeSuite ? 'Visible tout de suite' : 'Invisible pour l’instant'}
             </span>
           </button>
           <button className="fantome" onClick={() => setOuvert(false)}>
@@ -547,7 +547,7 @@ function BonusSurprise({
       {enReserve.length > 0 && (
         <div style={{ marginTop: 16, borderTop: '1px solid var(--bord)', paddingTop: 14 }}>
           <p className="faible" style={{ marginTop: 0 }}>
-            En réserve, invisible{enReserve.length > 1 ? 's' : ''} pour lui :
+            En réserve, invisible{enReserve.length > 1 ? 's' : ''} pour l’instant :
           </p>
           {enReserve.map((b) => (
             <div key={b.id} className="medaille">
@@ -755,10 +755,10 @@ function CoffreDetail({
           <b style={{ color: 'var(--or)' }}>{palier.label}</b>
           <p className="faible" style={{ margin: 0 }}>
             {etat === 'a_remettre'
-              ? 'Il l’a franchi. Il sait qu’un coffre est tombé, pas ce qu’il y a dedans.'
+              ? 'Franchi. Ton binôme sait qu’un coffre est tombé, pas ce qu’il y a dedans.'
               : etat === 'remis'
                 ? 'Déjà remis.'
-                : 'Il connaît le niveau, jamais le contenu.'}
+                : 'Ton binôme connaît le niveau, jamais le contenu.'}
           </p>
         </div>
       </div>
@@ -776,8 +776,7 @@ function CoffreDetail({
           ) : (
             <p className="faible">
               Tu n&rsquo;avais rien préparé pour ce palier. Tu peux le remettre quand
-              même — l&rsquo;application ne te jugera pas plus qu&rsquo;elle ne le
-              juge, lui.
+              même — l&rsquo;application ne juge personne, ni toi ni ton binôme.
             </p>
           )}
 

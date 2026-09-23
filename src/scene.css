@@ -488,60 +488,73 @@
   color: var(--encre-faible);
 }
 
-/* Le bouton principal : dôme de laiton, bord biseauté, socle épais. */
+/* Le bouton principal : un hublot de lagon cerclé de laiton, socle épais.
+   L'or est passé du remplissage au cerclage et aux lettres — le disque plein
+   écrasait le reste de l'écran, et la scène derrière ne se voyait plus. */
 .bouton-rond.cap {
-  width: 128px;
-  height: 128px;
-  font-size: 1.7rem;
-  color: #3a2708;
+  width: 122px;
+  height: 122px;
+  font-size: 1.6rem;
+  color: var(--or-clair);
   background:
-    radial-gradient(circle at 38% 28%, #ffe9b6 0%, var(--or-clair) 26%, var(--or) 58%, #b07c1d 100%);
+    radial-gradient(circle at 36% 26%, #2f8ba1 0%, #14596e 36%, #0a3243 70%, #05202a 100%);
   box-shadow:
-    inset 0 3px 0 rgba(255, 255, 255, 0.65),
-    inset 0 -6px 10px rgba(120, 72, 10, 0.5),
-    0 0 0 6px #0a3040,
-    0 0 0 8px var(--or-sombre),
-    0 9px 0 #6b4310,
-    0 16px 30px rgba(0, 0, 0, 0.55);
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+    inset 0 3px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -8px 16px rgba(0, 0, 0, 0.45),
+    inset 0 0 26px rgba(63, 192, 204, 0.26),
+    0 0 0 4px #05202a,
+    0 0 0 7px var(--or),
+    0 0 0 9px var(--or-sombre),
+    0 9px 0 #5c3d0d,
+    0 16px 30px rgba(0, 0, 0, 0.55),
+    0 0 28px rgba(233, 180, 76, 0.26);
+  text-shadow:
+    0 0 16px rgba(233, 180, 76, 0.55),
+    0 1px 0 rgba(0, 0, 0, 0.55);
 }
 
 .bouton-rond.cap:active:not(:disabled) {
   transform: translateY(7px);
   box-shadow:
-    inset 0 2px 0 rgba(255, 255, 255, 0.5),
-    inset 0 -3px 8px rgba(120, 72, 10, 0.5),
-    0 0 0 6px #0a3040,
-    0 0 0 8px var(--or-sombre),
-    0 2px 0 #6b4310,
+    inset 0 2px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -4px 10px rgba(0, 0, 0, 0.45),
+    inset 0 0 20px rgba(63, 192, 204, 0.32),
+    0 0 0 4px #05202a,
+    0 0 0 7px var(--or),
+    0 0 0 9px var(--or-sombre),
+    0 2px 0 #5c3d0d,
     0 6px 14px rgba(0, 0, 0, 0.5);
 }
 
-/* Le bouton secondaire : ardoise calme, jamais rouge. */
+/* Le bouton secondaire : le même hublot, cerclé d'ardoise au lieu de laiton.
+   Plus petit, plus sombre, mais de la même famille — c'est une journée comme
+   une autre, pas une sanction. Jamais rouge. */
 .bouton-rond.exit {
-  width: 82px;
-  height: 82px;
-  margin-top: 34px;
-  font-size: 0.92rem;
-  color: #dce9ec;
-  background: radial-gradient(circle at 38% 28%, #7e9aa3 0%, #5b7c85 45%, #35505a 100%);
+  width: 86px;
+  height: 86px;
+  margin-top: 32px;
+  font-size: 0.98rem;
+  color: #cfe2e6;
+  background:
+    radial-gradient(circle at 36% 26%, #4f7480 0%, #33525d 42%, #1b343d 100%);
   box-shadow:
-    inset 0 2px 0 rgba(255, 255, 255, 0.35),
-    inset 0 -4px 8px rgba(0, 0, 0, 0.35),
-    0 0 0 5px #0a3040,
-    0 0 0 6px #2c4954,
-    0 7px 0 #243c45,
+    inset 0 2px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -6px 12px rgba(0, 0, 0, 0.4),
+    0 0 0 4px #05202a,
+    0 0 0 6px #4a6c78,
+    0 7px 0 #1a333c,
     0 12px 22px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
 }
 
 .bouton-rond.exit:active:not(:disabled) {
   transform: translateY(5px);
   box-shadow:
-    inset 0 2px 0 rgba(255, 255, 255, 0.3),
-    inset 0 -2px 6px rgba(0, 0, 0, 0.35),
-    0 0 0 5px #0a3040,
-    0 0 0 6px #2c4954,
-    0 2px 0 #243c45,
+    inset 0 2px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -3px 8px rgba(0, 0, 0, 0.4),
+    0 0 0 4px #05202a,
+    0 0 0 6px #4a6c78,
+    0 2px 0 #1a333c,
     0 5px 12px rgba(0, 0, 0, 0.45);
 }
 

@@ -409,7 +409,7 @@ function Declarer({
               autoFocus
             />
             <p className="faible" style={{ margin: '4px 0 0' }}>
-              Lui seul le lira, et seulement s’il existe. {500 - mot.length} signes
+              Ton binôme seul le lira, et seulement s’il existe. {500 - mot.length} signes
               restants.
             </p>
           </>
