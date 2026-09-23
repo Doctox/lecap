@@ -321,10 +321,6 @@ function Declarer({
   const [occupe, setOccupe] = useState(false)
   const [erreur, setErreur] = useState<string | null>(null)
 
-  const enJeu = bareme
-    .filter((s) => cochees.includes(s.key))
-    .reduce((n, s) => n + s.points, 0)
-
   function basculer(key: string) {
     setCochees((c) => (c.includes(key) ? c.filter((k) => k !== key) : [...c, key]))
   }
@@ -416,6 +412,9 @@ function Declarer({
         )}
       </div>
 
+      {/* Deux boutons nus. Ce qu'ils font est expliqué sous le ⓘ, pas écrit en
+          permanence sous eux : l'étiquette servait le premier soir et encombrait
+          tous les suivants. */}
       <div className="manette">
         <button
           className="bouton-rond exit"
@@ -424,7 +423,6 @@ function Declarer({
           aria-label="Journée avec"
         >
           EXIT
-          <span className="sous-rond">ça arrive</span>
         </button>
 
         <button
@@ -434,9 +432,6 @@ function Declarer({
           aria-label="Journée à zéro"
         >
           CAP
-          <span className="sous-rond">
-            +1 XP{enJeu > 0 && ` · +${enJeu} à arbitrer`}
-          </span>
         </button>
       </div>
 
@@ -458,7 +453,8 @@ function Declarer({
       {infoManette && (
         <div className="explication" style={{ marginTop: 12 }}>
           <p>
-            <b>CAP</b> — la journée tenue. Tu empoches ton XP.
+            <b>CAP</b> — la journée tenue. Tu empoches ton XP tout de suite, et
+            les quêtes cochées partent à l&rsquo;arbitrage de ton binôme.
           </p>
           <p>
             <b>EXIT</b> — celle où ça n&rsquo;a pas tenu. Aucun XP ne se retire,

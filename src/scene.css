@@ -475,19 +475,6 @@
     filter 0.15s ease;
 }
 
-.bouton-rond .sous-rond {
-  position: absolute;
-  top: calc(100% + 7px);
-  left: 50%;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: none;
-  color: var(--encre-faible);
-}
-
 /* Le bouton principal : un hublot de lagon cerclé de laiton, socle épais.
    L'or est passé du remplissage au cerclage et aux lettres — le disque plein
    écrasait le reste de l'écran, et la scène derrière ne se voyait plus. */
@@ -565,10 +552,11 @@
 
 /* De la place sous la manette, et le ⓘ centré : .info est un bloc, donc
    text-align ne le déplaçait pas. */
+/* Les boutons n'ont plus d'étiquette dessous : le ⓘ peut remonter. */
 .manette + .apres-manette {
   display: flex;
   justify-content: center;
-  margin-top: 30px;
+  margin-top: 16px;
 }
 
 

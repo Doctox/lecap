@@ -348,7 +348,7 @@
   <p class="p-chapeau">
     Personne ne surveille personne : l'application ne vérifie rien, et c'est
     voulu. Mais le joueur ne s'attribue pas ses points non plus. Il coche ce
-    qu'il a traversé, et c'est l'autre qui tranche ce que ça valait.
+    a été traversé, et c'est l'autre qui tranche ce que ça valait.
   </p>
 
   <div class="p-duo">
@@ -402,7 +402,7 @@
 
       <p class="p-chapeau">
         Les quêtes cochées ne s'ajoutent pas toutes seules : elles partent
-        <b>« à arbitrer »</b>. Le joueur dit ce qu'il a traversé, le binôme dit
+        <b>« à arbitrer »</b>. L'un dit ce qui a été traversé, l'autre dit
         ce que ça valait. C'est tout le contrat.
       </p>
 
@@ -511,12 +511,8 @@
                 </div>
 
                 <div class="manette">
-                  <button class="bouton-rond exit" type="button" aria-label="Journée avec">
-                    EXIT<span class="sous-rond">ça arrive</span>
-                  </button>
-                  <button class="bouton-rond cap" type="button" aria-label="Journée à zéro">
-                    CAP<span class="sous-rond" id="sous-cap">+1 XP · +3 à arbitrer</span>
-                  </button>
+                  <button class="bouton-rond exit" type="button" aria-label="Journée avec">EXIT</button>
+                  <button class="bouton-rond cap" type="button" aria-label="Journée à zéro">CAP</button>
                 </div>
 
                 <div class="apres-manette">
@@ -708,7 +704,7 @@
                     <button type="button" aria-pressed="false">+4</button>
                     <button type="button" aria-pressed="false">+5</button>
                   </div>
-                  <textarea readonly placeholder="Un mot, s'il le mérite. Il ne le lira qu'au moment où tu le décides."></textarea>
+                  <textarea readonly placeholder="Un mot, si ça le mérite. Il ne sera lu qu'au moment où tu le décides."></textarea>
                   <div class="onglets-fenetre" style="margin-top:12px">
                     <button class="onglet-fenetre" type="button" aria-selected="false">Lui montrer</button>
                     <button class="onglet-fenetre" type="button" aria-selected="true">Garder en réserve</button>
@@ -781,9 +777,9 @@
 
       <p class="p-chapeau">
         Sept coffres du niveau 2 au niveau 8, ce n'est qu'un <b>réglage par
-        défaut</b> — celui qui tient la barre en fait ce qu'il veut. Il peut en
-        mettre <b>de 1 à 12</b>, les placer au niveau qu'il veut, les renommer
-        librement, en ajouter ou en retirer.
+        défaut</b>. À la barre, on en fait ce qu'on veut : <b>de 1 à 12</b>,
+        placés aux niveaux qu'on choisit, renommés librement, ajoutés ou
+        retirés.
       </p>
 
       <p class="p-chapeau">
@@ -865,7 +861,7 @@
       <h3>Même après coup</h3>
       <p>
         Quand un coffre est remis, son contenu est <b>recopié</b> dans le
-        journal du joueur. C'est le seul chemin par lequel il l'apprend : la
+        journal du joueur. C'est le seul chemin par lequel ça s'apprend : la
         table des récompenses ne s'ouvre jamais, même une fois le cadeau donné.
       </p>
     </div>
@@ -1054,28 +1050,25 @@
     for (const [cle, el] of Object.entries(sousBinome)) el.hidden = cle !== b.dataset.sousb
   })
 
-  // Les quêtes se cochent. Le bouton CAP n'additionne PAS leurs points : il
-  // annonce +1 XP tout de suite, et le reste part à l'arbitrage. C'est la règle
-  // du jeu, et la montrer de travers serait pire que ne rien montrer.
-  const sousCap = document.getElementById('sous-cap')
+  // Les quêtes se cochent, et seul le compteur de l'onglet en rend compte. Les
+  // deux boutons restent nus : ils ne promettent aucun total, parce que le
+  // joueur ne fixe pas ses points — c'est tout le contrat du jeu.
   const compteur = document.getElementById('compteur-quetes')
   const cases = [...document.querySelectorAll('#s-quetes .case-quete')]
 
-  function majManette() {
-    const cochees = cases.filter((q) => q.dataset.cochee === 'true')
-    const enJeu = cochees.reduce((n, q) => n + Number(q.dataset.points), 0)
-    sousCap.textContent = enJeu > 0 ? `+1 XP · +${enJeu} à arbitrer` : '+1 XP'
-    compteur.textContent = String(cochees.length)
-    compteur.hidden = cochees.length === 0
+  function majCompteur() {
+    const cochees = cases.filter((q) => q.dataset.cochee === 'true').length
+    compteur.textContent = String(cochees)
+    compteur.hidden = cochees === 0
   }
 
   for (const q of cases) {
     q.addEventListener('click', () => {
       q.dataset.cochee = q.dataset.cochee === 'true' ? 'false' : 'true'
-      majManette()
+      majCompteur()
     })
   }
-  majManette()
+  majCompteur()
 
   // Le réglage des coffres. Les trois rythmes sont ceux de l'application, et le
   // nombre de jours se calcule avec sa propre formule d'XP.
