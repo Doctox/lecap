@@ -7,6 +7,18 @@ export default defineConfig({
   base: '/lecap/',
   // Écoute aussi sur le réseau local, pour tester depuis un téléphone.
   server: { host: true },
+  build: {
+    rollupOptions: {
+      input: {
+        // L'application. Chemins relatifs à la racine du projet.
+        main: 'index.html',
+        // La page de présentation : une vraie page, servie à part, qui se
+        // contente d'importer les feuilles de style du jeu pour montrer ses
+        // écrans tels qu'ils sont. Elle doit s'ouvrir sans compte.
+        presentation: 'presentation/index.html',
+      },
+    },
+  },
   plugins: [
     react(),
     VitePWA({
@@ -37,6 +49,9 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,webp,woff2}'],
+        // La présentation n'est pas la coquille du jeu : inutile de la mettre
+        // dans le cache de ceux qui ont déjà installé l'application.
+        globIgnores: ['**/presentation/**'],
         // Aucune donnée de jeu en cache : la coquille seulement.
         navigateFallback: '/lecap/index.html',
         // …sauf la présentation, qui est une vraie page et non une route de

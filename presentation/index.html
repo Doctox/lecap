@@ -1,0 +1,1128 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le Cap — la présentation</title>
+<meta name="description" content="Un jeu à deux pour arrêter quelque chose : l'un déclare ses journées et marque de l'XP, l'autre arbitre ce que ça valait et prépare des coffres dont le contenu ne lui est jamais lisible.">
+<meta name="theme-color" content="#041b25">
+<link rel="icon" href="/favicon-64.png">
+
+<!-- Ce qui s'affiche quand on colle le lien dans une conversation. C'est toute
+     la raison d'être de cette page : montrer le jeu sans ouvrir de compte. -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Le Cap">
+<meta property="og:description" content="L'un tient ses journées, l'autre prépare les coffres. Un jeu à deux pour arrêter quelque chose.">
+<meta property="og:image" content="https://www.doctox.fr/lecap/marque-1120.png">
+<meta property="og:url" content="https://www.doctox.fr/lecap/presentation/">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..700,0..100,0..1&family=Instrument+Sans:wght@400;500;600&display=swap">
+
+<!-- Les VRAIES feuilles de style du jeu. Les écrans montrés plus bas ne sont
+     pas des imitations : ce sont les composants de l'application, avec leur
+     laiton, leurs biseaux et leurs gemmes. -->
+<script type="module" src="../src/presentation.ts"></script>
+
+<style>
+/* Le Cap — l'habillage de la page de présentation UNIQUEMENT.
+   Tout ce qui ressemble à l'application vient de ses propres feuilles de style,
+   importées juste au-dessus. Ici on ne trouve que le décor autour : titres,
+   sections, cadre de téléphone. Préfixe « p- » partout, pour qu'aucune règle
+   d'ici ne puisse entrer en collision avec une règle du jeu. */
+
+:root {
+  --p-titre: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+  --p-texte: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif;
+}
+
+.p-page {
+  font-family: var(--p-texte);
+  font-size: 16.5px;
+  line-height: 1.62;
+}
+
+/* Le jeu déclare .jeu { display: flex }, ce qui l'emporte sur le display:none
+   que le navigateur applique à [hidden] — les deux écrans se retrouvaient
+   empilés. On rend l'attribut à nouveau souverain. */
+.p-page [hidden] { display: none !important; }
+
+.p-large { width: 100%; max-width: 1080px; margin: 0 auto; padding-inline: 20px; }
+
+.p-page section { padding-block: 56px; }
+
+.p-page h1,
+.p-page h2,
+.p-page h3 {
+  font-family: var(--p-titre);
+  font-variation-settings: 'SOFT' 32, 'WONK' 1;
+  margin: 0;
+  line-height: 1.08;
+  text-wrap: balance;
+  letter-spacing: -0.015em;
+}
+
+.p-page h2 { font-size: clamp(1.7rem, 4.4vw, 2.5rem); font-weight: 600; }
+.p-page h3 { font-size: 1.14rem; font-weight: 600; margin-bottom: 7px; }
+
+.p-page p { margin: 0 0 14px; max-width: 62ch; }
+.p-page section p:last-child { margin-bottom: 0; }
+
+.p-sur-titre {
+  font-size: 0.7rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--or-sombre);
+  font-weight: 600;
+  margin: 0 0 13px;
+}
+
+.p-chapeau { color: var(--encre-doux); margin-top: 14px; }
+.p-note { color: var(--encre-faible); font-size: 0.85rem; }
+
+/* La séparation : un trait de laiton et un losange de compas. Elle remplace
+   l'empilement de cartes — les cadres restent au jeu, pas au décor. */
+.p-rose { display: flex; align-items: center; gap: 14px; }
+.p-rose::before, .p-rose::after {
+  content: '';
+  flex: 1; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--bord), transparent);
+}
+.p-rose i { width: 7px; height: 7px; background: var(--or-sombre); transform: rotate(45deg); }
+
+/* ------------------------------------------------------------------ Hero */
+
+.p-hero { padding-block: clamp(28px, 6vw, 62px) 38px; text-align: center; }
+
+.p-hero img {
+  width: min(420px, 80%);
+  height: auto;
+  margin: 0 auto 4px;
+  display: block;
+  filter: drop-shadow(0 14px 40px rgba(0, 0, 0, 0.6));
+}
+
+.p-accroche {
+  font-family: var(--p-titre);
+  font-variation-settings: 'SOFT' 32, 'WONK' 1;
+  font-size: clamp(1.45rem, 4.6vw, 2.3rem);
+  font-weight: 600;
+  line-height: 1.16;
+  max-width: 21ch;
+  margin: 12px auto 18px !important;
+  text-wrap: balance;
+}
+.p-accroche em { font-style: normal; color: var(--or); }
+
+.p-hero .p-chapeau { max-width: 52ch; margin: 0 auto 24px !important; }
+
+.p-etiquettes {
+  display: flex; flex-wrap: wrap; gap: 9px; justify-content: center;
+  list-style: none; margin: 0; padding: 0;
+}
+.p-etiquettes li {
+  font-size: 0.72rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--encre-doux);
+  border: 1px solid var(--bord);
+  border-radius: 999px;
+  padding: 6px 13px;
+  background: rgba(10, 48, 64, 0.6);
+}
+.p-etiquettes li.p-vedette { color: var(--or-clair); border-color: var(--or-sombre); }
+
+/* --------------------------------------------------------------- Colonnes */
+
+.p-duo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(258px, 1fr));
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.p-bloc {
+  border: 1px solid var(--bord);
+  border-top: 2px solid var(--azur-sombre);
+  border-radius: 14px;
+  background: linear-gradient(180deg, var(--carte-haut), var(--carte));
+  padding: 22px 20px;
+}
+.p-bloc.p-barre { border-top-color: var(--or-sombre); }
+.p-bloc p { font-size: 0.95rem; color: var(--encre-doux); }
+.p-bloc .p-qui {
+  font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--azur); font-weight: 600; margin: 0 0 8px;
+}
+.p-bloc.p-barre .p-qui { color: var(--or); }
+
+/* Une mise en page à deux colonnes : le texte, et l'écran à côté. */
+.p-avec-ecran { display: grid; grid-template-columns: 1fr; gap: 34px; align-items: start; }
+@media (min-width: 980px) {
+  .p-avec-ecran { grid-template-columns: 1fr 390px; gap: 50px; }
+  .p-avec-ecran .p-colonne { padding-top: 4px; }
+}
+
+/* ------------------------------------------------------- Le téléphone */
+
+.p-bascule {
+  display: inline-flex; padding: 4px; gap: 4px;
+  border: 1px solid var(--bord); border-radius: 999px;
+  background: var(--fond-2); margin-bottom: 18px; flex-wrap: wrap; max-width: 100%;
+}
+.p-bascule button {
+  font: inherit; font-size: 0.86rem; font-weight: 500;
+  color: var(--encre-doux); background: transparent;
+  border: 0; border-radius: 999px; padding: 8px 16px; cursor: pointer;
+}
+.p-bascule button[aria-pressed='true'] {
+  background: linear-gradient(180deg, #14536a, #0c3d4f);
+  color: var(--encre);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.p-telephone {
+  width: 100%; max-width: 390px; margin-inline: auto;
+  border: 1px solid #16485a; border-radius: 34px; padding: 10px;
+  background: linear-gradient(160deg, #103241, #061e28 55%, #0d2c39);
+  box-shadow: 0 26px 60px rgba(0, 0, 0, 0.62), inset 0 1px 0 rgba(233, 180, 76, 0.18);
+}
+.p-ecran {
+  border-radius: 26px; overflow: hidden;
+  background:
+    radial-gradient(420px 260px at 50% -16%, #0b3a49 0%, transparent 64%),
+    var(--fond);
+}
+
+/* Le jeu vit ici dans un cadre, pas dans une fenêtre de navigateur : on lui
+   retire ce qui suppose un écran entier. Sélecteurs plus spécifiques que les
+   siens, pour gagner sans !important. */
+.p-telephone .jeu {
+  min-height: 0;
+  padding-bottom: 0;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+.p-telephone .onglets {
+  position: static;
+  max-width: none;
+  margin: 0;
+  padding-bottom: 10px;
+}
+.p-telephone .panneau { padding: 22px 14px 12px; }
+.p-telephone .fenetre:last-of-type { margin-bottom: 8px; }
+.p-telephone textarea { min-height: 76px; }
+
+.p-legende {
+  text-align: center; font-size: 0.8rem; color: var(--encre-faible);
+  margin: 14px auto 0 !important; max-width: 36ch;
+}
+
+/* --------------------------------------------------------- Le secret */
+
+.p-preuve {
+  border: 1px solid var(--bord); border-radius: 13px;
+  background: #061e28; padding: 16px 14px;
+  font-family: ui-monospace, 'Cascadia Mono', 'Consolas', monospace;
+  font-size: 0.78rem; line-height: 1.9;
+  overflow-x: auto; margin-top: 22px;
+}
+.p-preuve div { white-space: nowrap; }
+.p-preuve .p-qui-req { color: var(--encre-faible); }
+.p-preuve .p-vide { color: var(--ardoise); }
+.p-preuve .p-plein { color: var(--or); }
+.p-preuve .p-ok { color: var(--azur); }
+
+.p-grille {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(238px, 1fr));
+  gap: 20px 34px; margin-top: 26px;
+}
+.p-grille p { font-size: 0.93rem; color: var(--encre-doux); }
+
+/* ----------------------------------------------------------- Les rangs */
+
+.p-rangs {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(94px, 1fr));
+  gap: 14px; margin-top: 26px;
+}
+.p-rangs figure { margin: 0; text-align: center; }
+.p-rangs img {
+  width: 100%; aspect-ratio: 1; object-fit: cover;
+  border-radius: 12px; border: 1px solid var(--bord);
+  background: #0d3543; display: block;
+}
+.p-rangs figcaption { margin-top: 6px; font-size: 0.74rem; line-height: 1.3; }
+.p-rangs span { display: block; font-size: 0.62rem; color: var(--encre-faible); letter-spacing: 0.08em; }
+
+/* -------------------------------------------------------- Les numéros */
+
+.p-numeros { display: grid; gap: 9px; margin-top: 20px; }
+.p-numero {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  border: 1px solid var(--bord); border-radius: 12px;
+  background: rgba(10, 48, 64, 0.55);
+  padding: 12px 15px; text-decoration: none; color: var(--encre);
+}
+.p-numero:hover { border-color: var(--or-sombre); }
+.p-numero .p-nom { flex: 1; min-width: 150px; font-weight: 600; font-size: 0.95rem; }
+.p-numero .p-detail { display: block; font-weight: 400; font-size: 0.8rem; color: var(--encre-faible); }
+.p-numero .p-tel {
+  font-family: ui-monospace, 'Cascadia Mono', monospace;
+  font-size: 0.95rem; color: var(--or-clair); white-space: nowrap;
+}
+
+/* ------------------------------------------------------------ Commencer */
+
+.p-depart {
+  border: 1px solid var(--bord); border-top: 2px solid var(--or-sombre);
+  border-radius: 16px;
+  background: linear-gradient(180deg, var(--carte-haut), var(--carte));
+  padding: 26px 22px; margin-top: 24px;
+}
+.p-etapes { counter-reset: pas; list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 14px; }
+.p-etapes li {
+  counter-increment: pas;
+  display: grid; grid-template-columns: 30px 1fr; gap: 13px;
+  align-items: start; font-size: 0.94rem; color: var(--encre-doux);
+}
+.p-etapes li > span { min-width: 0; }
+.p-etapes li::before {
+  content: counter(pas);
+  font-size: 0.82rem; font-weight: 600;
+  width: 30px; height: 30px; border-radius: 50%;
+  display: grid; place-content: center;
+  border: 1px solid var(--or-sombre); color: var(--or);
+}
+.p-etapes b { color: var(--encre); }
+
+.p-adresse {
+  display: inline-block; margin-top: 22px;
+  font-size: 1rem; font-weight: 600; color: var(--or-clair); text-decoration: none;
+  border: 1px solid var(--or-sombre); border-radius: 999px;
+  padding: 11px 24px; background: rgba(168, 96, 24, 0.16);
+}
+.p-adresse:hover { background: rgba(233, 180, 76, 0.24); color: #fff3d8; }
+
+.p-pied {
+  text-align: center; font-size: 0.8rem; color: var(--encre-faible);
+  padding: 32px 20px 46px;
+}
+.p-pied a { color: var(--encre-doux); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+</style>
+</head>
+<body>
+<div class="p-page">
+
+<header class="p-hero p-large">
+  <img src="/marque-560.png" alt="Le Cap" width="560" height="560">
+
+  <p class="p-accroche">L'un tient ses journées. <em>L'autre prépare les coffres.</em></p>
+
+  <p class="p-chapeau">
+    Un jeu à deux, pour arrêter quelque chose. L'un déclare ses journées et
+    marque de l'XP ; l'autre arbitre ce que ça valait, accorde des bonus, et
+    remplit des coffres dont le contenu ne lui sera jamais lisible.
+  </p>
+
+  <ul class="p-etiquettes">
+    <li class="p-vedette">Duo obligatoire</li>
+    <li>Toute addiction</li>
+    <li>Google ou Discord</li>
+    <li>Installable</li>
+    <li>Aucun traqueur</li>
+  </ul>
+</header>
+
+<div class="p-large"><div class="p-rose"><i></i></div></div>
+
+<section class="p-large">
+  <p class="p-sur-titre">Deux rôles, un seul code</p>
+  <h2>L'un avance, l'autre tient la carte</h2>
+  <p class="p-chapeau">
+    Personne ne surveille personne : l'application ne vérifie rien, et c'est
+    voulu. Mais le joueur ne s'attribue pas ses points non plus. Il coche ce
+    qu'il a traversé, et c'est l'autre qui tranche ce que ça valait.
+  </p>
+
+  <div class="p-duo">
+    <div class="p-bloc">
+      <p class="p-qui">Rôle 1</p>
+      <h3>Garder le cap</h3>
+      <p>
+        Déclarer sa journée, chaque soir. Cocher les situations traversées.
+        Laisser deux lignes si on en a envie — jamais obligatoire.
+      </p>
+      <p>
+        Voir monter son rang, du Mousse au Grand Cap, et sa série de jours
+        d'affilée.
+      </p>
+    </div>
+
+    <div class="p-bloc p-barre">
+      <p class="p-qui">Rôle 2</p>
+      <h3>Tenir la barre</h3>
+      <p>
+        Arbitrer les quêtes déclarées. Accorder des bonus surprise de +1 à +5,
+        tout de suite ou gardés en réserve, invisibles.
+      </p>
+      <p>
+        Régler les coffres comme on veut — combien, à quels niveaux, sous quels
+        noms — et choisir le moment de chaque remise.
+      </p>
+    </div>
+  </div>
+</section>
+
+<div class="p-large"><div class="p-rose"><i></i></div></div>
+
+<!-- ===================================================================== -->
+<!-- L'écran : composants réels du jeu, pas une imitation.                  -->
+<!-- ===================================================================== -->
+
+<section class="p-large">
+  <div class="p-avec-ecran">
+    <div class="p-colonne">
+      <p class="p-sur-titre">La boucle du soir</p>
+      <h2>Deux boutons, et rien d'autre à faire</h2>
+
+      <p class="p-chapeau">
+        <b>CAP</b>, la journée a tenu : <b>+1 XP tout de suite</b>, sans
+        attendre personne. <b>EXIT</b>, elle n'a pas tenu : aucun XP ne se
+        retire, la série repart, le reste est acquis. Pas de rouge, pas de
+        croix, pas de reproche — c'est écrit dans la feuille de style du jeu
+        comme une règle.
+      </p>
+
+      <p class="p-chapeau">
+        Les quêtes cochées ne s'ajoutent pas toutes seules : elles partent
+        <b>« à arbitrer »</b>. Le joueur dit ce qu'il a traversé, le binôme dit
+        ce que ça valait. C'est tout le contrat.
+      </p>
+
+      <p class="p-chapeau">
+        La journée bascule à <b>4 h du matin</b> : une soirée déclarée à 1 h
+        compte sur la veille. Tenir jusqu'à minuit passé ne doit pas coûter un
+        point.
+      </p>
+
+      <p class="p-note">
+        L'écran ci-contre est le vrai — mêmes composants, mêmes styles. Coche
+        des quêtes, change d'onglet, passe de l'autre côté.
+      </p>
+    </div>
+
+    <div>
+      <div class="p-bascule" role="group" aria-label="Choisir le rôle à afficher">
+        <button type="button" aria-pressed="true" data-role="cap">Garde le cap</button>
+        <button type="button" aria-pressed="false" data-role="barre">Tient la barre</button>
+      </div>
+
+      <div class="p-telephone">
+        <div class="p-ecran">
+
+          <!-- ============================ CÔTÉ JOUEUR ============================ -->
+          <div class="jeu" id="vue-cap">
+            <div class="scene">
+              <div class="scene-haut">
+                <div class="portrait-scene">
+                  <img src="/avatars/rang-04.webp" alt="">
+                  <span class="niveau-plaque">NIV. 4</span>
+                </div>
+
+                <div class="ardoise">
+                  <div style="display:flex;align-items:flex-start">
+                    <div style="flex:1;min-width:0">
+                      <div class="rang-texte">Timonier</div>
+                      <div class="nom">12 XP</div>
+                    </div>
+                    <button class="fantome" aria-label="Réglages" style="padding:2px 6px;font-size:1.05rem">⚙</button>
+                  </div>
+
+                  <div class="ligne-xp">
+                    <span class="etiquette">XP</span>
+                    <div class="jauge-hud"><i style="width:67%"></i></div>
+                  </div>
+
+                  <p class="compte">
+                    <b>6</b> jours d'affilée · record <b>6</b> · <b>6</b> journées à zéro
+                  </p>
+                </div>
+              </div>
+
+              <div class="dialogue" id="bulle">
+                <p>Alors, cette journée ? <b>Déclare-la</b> et empoche ton XP. Si tu as traversé quelque chose, coche la quête.</p>
+              </div>
+            </div>
+
+            <div class="panneau">
+
+              <!-- Onglet « Aujourd'hui » -->
+              <div id="p-jour">
+                <div class="fenetre">
+                  <h2>Ta journée</h2>
+
+                  <div class="onglets-fenetre" role="tablist">
+                    <button class="onglet-fenetre" role="tab" aria-selected="true" data-sous="quetes">
+                      Tes quêtes<span class="compteur" id="compteur-quetes">1</span>
+                    </button>
+                    <button class="onglet-fenetre" role="tab" aria-selected="false" data-sous="mot">
+                      Ton mot
+                    </button>
+                  </div>
+
+                  <div id="s-quetes">
+                    <div class="menu-quetes">
+                      <button class="case-quete" type="button" data-cochee="false" data-points="2">
+                        <span class="haut"><span class="gemme-mini" data-rarete="commune"></span><span class="val">+2</span></span>
+                        <span>On m'a proposé</span>
+                      </button>
+                      <button class="case-quete" type="button" data-cochee="true" data-points="3">
+                        <span class="haut"><span class="gemme-mini" data-rarete="rare"></span><span class="val">+3</span></span>
+                        <span>Soirée entre amis</span>
+                      </button>
+                      <button class="case-quete" type="button" data-cochee="false" data-points="4">
+                        <span class="haut"><span class="gemme-mini" data-rarete="rare"></span><span class="val">+4</span></span>
+                        <span>Réunion de famille, fête, anniversaire</span>
+                      </button>
+                      <button class="case-quete" type="button" data-cochee="false" data-points="5">
+                        <span class="haut"><span class="gemme-mini" data-rarete="epique"></span><span class="val">+5</span></span>
+                        <span>Une soirée où j'avais vraiment envie</span>
+                      </button>
+                    </div>
+                    <p class="faible" style="margin:10px 0 0">
+                      Tu coches ce que tu as traversé. C'est ton binôme qui arbitre ce
+                      que ça vaut — tu ne choisis pas tes points toi-même.
+                    </p>
+                  </div>
+
+                  <div id="s-mot" hidden>
+                    <textarea readonly placeholder="Deux lignes sur ta journée. Jamais obligatoire.">Longue soirée. Rien lâché.</textarea>
+                    <p class="faible" style="margin:4px 0 0">
+                      Ton binôme seul le lira, et seulement s'il existe. 474 signes restants.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="manette">
+                  <button class="bouton-rond exit" type="button" aria-label="Journée avec">
+                    EXIT<span class="sous-rond">ça arrive</span>
+                  </button>
+                  <button class="bouton-rond cap" type="button" aria-label="Journée à zéro">
+                    CAP<span class="sous-rond" id="sous-cap">+1 XP · +3 à arbitrer</span>
+                  </button>
+                </div>
+
+                <div class="apres-manette">
+                  <button class="info" type="button" aria-label="Que font ces deux boutons ?">i</button>
+                </div>
+              </div>
+
+              <!-- Onglet « La route » -->
+              <div id="p-route" hidden>
+                <div class="fenetre">
+                  <h2>La route</h2>
+                  <div class="route-cadre">
+                    <div class="route">
+                      <div class="etape" data-etat="ouvert">
+                        <button class="coffre-noeud" type="button" aria-label="Niveau 2 — Première surprise">
+                          <svg width="30" height="30" viewBox="0 0 48 48" aria-hidden="true"><g transform="rotate(-26 10 20)"><path d="M9 20a15 15 0 0 1 30 0v3H9z" fill="#123f4d" stroke="#7d9fa3" stroke-width="2.4" stroke-linejoin="round"></path><rect x="9" y="20" width="30" height="4" rx="1" fill="#4a6a76"></rect></g><rect x="9" y="24" width="30" height="16" rx="2.5" fill="#123f4d" stroke="#7d9fa3" stroke-width="2.4"></rect><rect x="9" y="29" width="30" height="3.5" fill="#4a6a76"></rect><circle cx="24" cy="27" r="3.2" fill="#e9b44c" opacity="0.75"></circle></svg>
+                        </button>
+                        <span class="etape-xp">niv. 2</span>
+                      </div>
+                      <div class="etape" data-etat="atteint">
+                        <button class="coffre-noeud" type="button" aria-label="Niveau 3 — Deuxième surprise">
+                          <svg width="30" height="30" viewBox="0 0 48 48" aria-hidden="true" style="filter:drop-shadow(0 0 7px rgba(233,180,76,0.75))"><path d="M9 20a15 15 0 0 1 30 0v3H9z" fill="#7a5c15" stroke="#f8d281" stroke-width="2.4" stroke-linejoin="round"></path><rect x="9" y="20" width="30" height="4" rx="1" fill="#e9b44c"></rect><rect x="9" y="24" width="30" height="16" rx="2.5" fill="#7a5c15" stroke="#f8d281" stroke-width="2.4"></rect><rect x="9" y="29" width="30" height="3.5" fill="#e9b44c"></rect><rect x="21" y="26" width="6" height="8" rx="1.6" fill="#e9b44c" stroke="#f8d281" stroke-width="1.4"></rect><circle cx="24" cy="30" r="1.3" fill="#7a5c15"></circle></svg>
+                        </button>
+                        <span class="etape-xp">niv. 3</span>
+                      </div>
+                      <div class="etape" data-etat="verrouille">
+                        <span class="ici">▾</span>
+                        <button class="coffre-noeud" type="button" aria-label="Niveau 4 — Troisième surprise">
+                          <svg width="30" height="30" viewBox="0 0 48 48" aria-hidden="true"><path d="M9 20a15 15 0 0 1 30 0v3H9z" fill="#0d3543" stroke="#2b6273" stroke-width="2.4" stroke-linejoin="round"></path><rect x="9" y="20" width="30" height="4" rx="1" fill="#17505f"></rect><rect x="9" y="24" width="30" height="16" rx="2.5" fill="#0d3543" stroke="#2b6273" stroke-width="2.4"></rect><rect x="9" y="29" width="30" height="3.5" fill="#17505f"></rect><rect x="21" y="26" width="6" height="8" rx="1.6" fill="#17505f" stroke="#2b6273" stroke-width="1.4"></rect></svg>
+                        </button>
+                        <span class="etape-xp">niv. 4</span>
+                      </div>
+                      <div class="etape" data-etat="verrouille">
+                        <button class="coffre-noeud" type="button" aria-label="Niveau 5 — Quatrième surprise">
+                          <svg width="30" height="30" viewBox="0 0 48 48" aria-hidden="true"><path d="M9 20a15 15 0 0 1 30 0v3H9z" fill="#0d3543" stroke="#2b6273" stroke-width="2.4" stroke-linejoin="round"></path><rect x="9" y="20" width="30" height="4" rx="1" fill="#17505f"></rect><rect x="9" y="24" width="30" height="16" rx="2.5" fill="#0d3543" stroke="#2b6273" stroke-width="2.4"></rect><rect x="9" y="29" width="30" height="3.5" fill="#17505f"></rect><rect x="21" y="26" width="6" height="8" rx="1.6" fill="#17505f" stroke="#2b6273" stroke-width="1.4"></rect></svg>
+                        </button>
+                        <span class="etape-xp">niv. 5</span>
+                      </div>
+                      <div class="etape" data-etat="verrouille">
+                        <button class="coffre-noeud" type="button" aria-label="Niveau 6 — Cinquième surprise">
+                          <svg width="30" height="30" viewBox="0 0 48 48" aria-hidden="true"><path d="M9 20a15 15 0 0 1 30 0v3H9z" fill="#0d3543" stroke="#2b6273" stroke-width="2.4" stroke-linejoin="round"></path><rect x="9" y="20" width="30" height="4" rx="1" fill="#17505f"></rect><rect x="9" y="24" width="30" height="16" rx="2.5" fill="#0d3543" stroke="#2b6273" stroke-width="2.4"></rect><rect x="9" y="29" width="30" height="3.5" fill="#17505f"></rect><rect x="21" y="26" width="6" height="8" rx="1.6" fill="#17505f" stroke="#2b6273" stroke-width="1.4"></rect></svg>
+                        </button>
+                        <span class="etape-xp">niv. 6</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p class="faible" style="margin:4px 0 0">
+                    Prochain coffre au niveau 4. Touche un coffre pour voir ce qu'il a à dire.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Onglet « Journal » -->
+              <div id="p-journal" hidden>
+                <div class="fenetre">
+                  <h2>Le journal de bord</h2>
+                  <div class="quetes">
+                    <div class="jour">
+                      <div class="jour-haut">
+                        <span class="gemme" data-rarete="commune">✓</span>
+                        <span class="libelle">lundi 22 septembre<span class="faible"> · en attente d'arbitrage</span></span>
+                        <span class="gain-plaque">+1</span>
+                      </div>
+                      <div class="jour-quetes"><span class="jeton" data-rarete="rare">Soirée entre amis</span></div>
+                    </div>
+                    <div class="jour">
+                      <div class="jour-haut">
+                        <span class="gemme" data-rarete="commune">✓</span>
+                        <span class="libelle">dimanche 21 septembre</span>
+                        <span class="gain-plaque">+1</span>
+                      </div>
+                    </div>
+                    <div class="jour">
+                      <div class="jour-haut">
+                        <span class="gemme" data-rarete="commune">✓</span>
+                        <span class="libelle">samedi 20 septembre</span>
+                        <span class="gain-plaque">+3</span>
+                      </div>
+                      <div class="jour-quetes"><span class="jeton" data-rarete="commune">On m'a proposé</span></div>
+                      <p class="jour-coffre">★ Coffre du niveau 3 — Deuxième surprise</p>
+                    </div>
+                    <div class="jour">
+                      <div class="jour-haut">
+                        <span class="gemme" style="background:var(--ardoise)">·</span>
+                        <span class="libelle">vendredi 19 septembre<span class="faible"> · journée avec</span></span>
+                        <span class="gain-plaque">—</span>
+                      </div>
+                    </div>
+                    <div class="jour">
+                      <div class="jour-haut">
+                        <span class="gemme" data-rarete="commune">✓</span>
+                        <span class="libelle">jeudi 18 septembre</span>
+                        <span class="gain-plaque">+1</span>
+                      </div>
+                      <p class="jour-coffre">★ Coffre du niveau 2 — Première surprise</p>
+                      <p class="jour-mot">🎁 Le disque que tu cherchais. Il est sous ton oreiller.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <nav class="onglets" role="tablist">
+              <button class="onglet" role="tab" aria-selected="true" data-onglet="jour">
+                <span class="pictogramme" aria-hidden="true">⚓</span>Aujourd'hui
+              </button>
+              <button class="onglet" role="tab" aria-selected="false" data-onglet="route">
+                <span class="pictogramme" aria-hidden="true">🧭</span>La route<span class="pastille">1</span>
+              </button>
+              <button class="onglet" role="tab" aria-selected="false" data-onglet="journal">
+                <span class="pictogramme" aria-hidden="true">📖</span>Journal
+              </button>
+            </nav>
+          </div>
+
+          <!-- ============================ CÔTÉ BINÔME ============================ -->
+          <div class="jeu" id="vue-barre" hidden>
+            <div class="scene">
+              <div class="scene-haut">
+                <div class="portrait-scene">
+                  <img src="/avatars/rang-04.webp" alt="">
+                  <span class="niveau-plaque">NIV. 4</span>
+                </div>
+
+                <div class="ardoise">
+                  <div style="display:flex;align-items:flex-start">
+                    <div style="flex:1;min-width:0">
+                      <div class="rang-texte">Timonier</div>
+                      <div class="nom">Ton binôme · 12 XP</div>
+                    </div>
+                    <button class="fantome" aria-label="Réglages" style="padding:2px 6px;font-size:1.05rem">⚙</button>
+                  </div>
+
+                  <div class="ligne-xp">
+                    <span class="etiquette">XP</span>
+                    <div class="jauge-hud"><i style="width:67%"></i></div>
+                  </div>
+
+                  <p class="compte">
+                    <b>6</b> jours d'affilée · record <b>6</b> · <b>6</b> journées à zéro
+                  </p>
+                </div>
+              </div>
+
+              <div class="dialogue">
+                <p>Ton binôme a déclaré <b>1 journée</b>. À toi d'arbitrer ce que ça valait.</p>
+              </div>
+            </div>
+
+            <div class="panneau">
+              <div class="fenetre">
+                <h2>Ton tour</h2>
+
+                <div class="onglets-fenetre" role="tablist">
+                  <button class="onglet-fenetre" role="tab" aria-selected="true" data-sousb="valider">
+                    À valider<span class="compteur">1</span>
+                  </button>
+                  <button class="onglet-fenetre" role="tab" aria-selected="false" data-sousb="pouvoir">
+                    Ton pouvoir
+                  </button>
+                </div>
+
+                <div id="s-valider">
+                  <p class="faible" style="margin:0 0 10px">
+                    Lundi 22 septembre — journée à zéro, une quête cochée.
+                  </p>
+                  <div class="menu-quetes">
+                    <button class="case-quete" type="button" data-cochee="true">
+                      <span class="haut"><span class="gemme-mini" data-rarete="rare"></span><span class="val">+3</span></span>
+                      <span>Soirée entre amis</span>
+                    </button>
+                  </div>
+                  <p class="jour-mot" style="margin-top:10px">« Longue soirée. Rien lâché. »</p>
+                  <button class="action-jeu" type="button" style="margin-top:12px">
+                    Accorder +3 XP<span class="sous">Il le verra tout de suite</span>
+                  </button>
+                  <button class="fantome" type="button">Plus tard</button>
+                </div>
+
+                <div id="s-pouvoir" hidden>
+                  <p class="faible" style="margin-top:0">
+                    De +1 à +5 XP, sans prévenir, quand tu trouves que la journée
+                    a été difficile à traverser.
+                  </p>
+                  <div class="choix-points">
+                    <button type="button" aria-pressed="false">+1</button>
+                    <button type="button" aria-pressed="true">+2</button>
+                    <button type="button" aria-pressed="false">+3</button>
+                    <button type="button" aria-pressed="false">+4</button>
+                    <button type="button" aria-pressed="false">+5</button>
+                  </div>
+                  <textarea readonly placeholder="Un mot, s'il le mérite. Il ne le lira qu'au moment où tu le décides."></textarea>
+                  <div class="onglets-fenetre" style="margin-top:12px">
+                    <button class="onglet-fenetre" type="button" aria-selected="false">Lui montrer</button>
+                    <button class="onglet-fenetre" type="button" aria-selected="true">Garder en réserve</button>
+                  </div>
+                  <button class="action-jeu" type="button" style="margin-top:14px">
+                    Accorder +2 XP<span class="sous">Invisible pour lui</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="fenetre">
+                <h2>Tes coffres</h2>
+                <div class="quetes">
+                  <div class="jour">
+                    <div class="jour-haut">
+                      <span class="gemme" data-rarete="epique">★</span>
+                      <span class="libelle">Deuxième surprise<span class="faible"> · niveau 3, atteint</span></span>
+                      <span class="gain-plaque">prêt</span>
+                    </div>
+                    <p class="jour-mot">Le vinyle cherché depuis six mois. Déjà commandé.</p>
+                    <button class="action-jeu" type="button" style="margin-top:10px">
+                      Lui offrir<span class="sous">C'est toi qui choisis le moment</span>
+                    </button>
+                  </div>
+                  <div class="jour">
+                    <div class="jour-haut">
+                      <span class="gemme" data-rarete="commune">✎</span>
+                      <span class="libelle">Troisième surprise<span class="faible"> · niveau 4, à remplir</span></span>
+                      <span class="gain-plaque">8 XP</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <nav class="onglets" role="tablist">
+              <button class="onglet" role="tab" aria-selected="true">
+                <span class="pictogramme" aria-hidden="true">⚖</span>Ton tour<span class="pastille">1</span>
+              </button>
+              <button class="onglet" role="tab" aria-selected="false">
+                <span class="pictogramme" aria-hidden="true">🎁</span>Coffres
+              </button>
+              <button class="onglet" role="tab" aria-selected="false">
+                <span class="pictogramme" aria-hidden="true">📖</span>Journal
+              </button>
+            </nav>
+          </div>
+
+        </div>
+      </div>
+
+      <p class="p-legende" id="legende">
+        Côté joueur. Les coffres n'y sont jamais lisibles.
+      </p>
+    </div>
+  </div>
+</section>
+
+<div class="p-large"><div class="p-rose"><i></i></div></div>
+
+<!-- ===================================================================== -->
+<!-- Les coffres : réglables, c'est le point que la première version ratait -->
+<!-- ===================================================================== -->
+
+<section class="p-large">
+  <div class="p-avec-ecran">
+    <div class="p-colonne">
+      <p class="p-sur-titre">Les coffres</p>
+      <h2>C'est le binôme qui écrit les règles</h2>
+
+      <p class="p-chapeau">
+        Sept coffres du niveau 2 au niveau 8, ce n'est qu'un <b>réglage par
+        défaut</b> — celui qui tient la barre en fait ce qu'il veut. Il peut en
+        mettre <b>de 1 à 12</b>, les placer au niveau qu'il veut, les renommer
+        librement, en ajouter ou en retirer.
+      </p>
+
+      <p class="p-chapeau">
+        Trois rythmes sont prêts d'un geste — <b>Un mois</b>, <b>Trois mois</b>,
+        <b>Un an</b> — et chaque ligne annonce le jour visé. Essaie-les sur
+        l'écran ci-contre.
+      </p>
+
+      <p class="p-chapeau">
+        Une seule chose est verrouillée, et c'est volontaire : <b>ce qui est
+        acquis reste acquis</b>. Un coffre déjà franchi ne se retire pas, et
+        l'éloigner ne le referme pas. Le rapprocher d'un niveau déjà dépassé
+        l'ouvre aussitôt.
+      </p>
+
+      <p class="p-note">
+        Les jours affichés supposent une journée déclarée par jour, sans aucune
+        quête. Avec des quêtes, c'est plus rapide.
+      </p>
+    </div>
+
+    <div>
+      <div class="p-telephone">
+        <div class="p-ecran">
+          <div class="jeu">
+            <div class="panneau" style="padding-top:26px">
+              <div class="fenetre">
+                <h2>Réglage des coffres</h2>
+
+                <div class="onglets-fenetre" role="tablist" id="presets">
+                  <button class="onglet-fenetre" type="button" role="tab" aria-selected="true" data-preset="mois">Un mois</button>
+                  <button class="onglet-fenetre" type="button" role="tab" aria-selected="false" data-preset="trimestre">Trois mois</button>
+                  <button class="onglet-fenetre" type="button" role="tab" aria-selected="false" data-preset="an">Un an</button>
+                </div>
+
+                <div id="lignes-coffres"></div>
+
+                <button class="discret" type="button" style="margin-top:12px">+ Ajouter un coffre</button>
+
+                <button class="action-jeu" type="button" style="margin-top:14px">
+                  Enregistrer<span class="sous" id="resume-coffres">7 coffres · dernier vers le jour 39</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="p-legende">
+        Le réglage des coffres, réservé au binôme. Les trois rythmes sont actifs.
+      </p>
+    </div>
+  </div>
+</section>
+
+<div class="p-large"><div class="p-rose"><i></i></div></div>
+
+<section class="p-large">
+  <p class="p-sur-titre">Le point qui ne se négocie pas</p>
+  <h2>Le secret ne tient pas à l'écran, il tient à la base</h2>
+  <p class="p-chapeau">
+    Cacher une récompense dans l'interface ne vaut rien : un joueur curieux ouvre
+    les outils du navigateur et lit tout. Ici, la table des récompenses n'a
+    qu'une seule règle de lecture, et elle ne concerne que le binôme. Avec le
+    vrai jeton du joueur, la même requête renvoie une liste vide.
+  </p>
+
+  <div class="p-preuve">
+    <div><span class="p-qui-req">joueur</span> &nbsp;GET /rest/v1/rewards → <span class="p-vide">[ ]</span> <span class="p-ok">200 OK</span></div>
+    <div><span class="p-qui-req">binôme</span> &nbsp;GET /rest/v1/rewards → <span class="p-plein">[ { "content": "…" } ]</span></div>
+  </div>
+  <p class="p-note" style="margin-top:10px">
+    Vérifié sur la base de production, depuis la page en ligne, avec une vraie
+    session.
+  </p>
+
+  <div class="p-grille">
+    <div>
+      <h3>Même après coup</h3>
+      <p>
+        Quand un coffre est remis, son contenu est <b>recopié</b> dans le
+        journal du joueur. C'est le seul chemin par lequel il l'apprend : la
+        table des récompenses ne s'ouvre jamais, même une fois le cadeau donné.
+      </p>
+    </div>
+    <div>
+      <h3>Deux comptes, rien d'autre</h3>
+      <p>
+        Google ou Discord. Pas de compte invité, pas de mot de passe à retenir,
+        pas de numéro de téléphone.
+      </p>
+    </div>
+    <div>
+      <h3>Aucun outil tiers</h3>
+      <p>
+        Pas de mesure d'audience, pas de traqueur, pas de publicité. Les serveurs
+        sont en Europe. Il s'agit de santé : la sobriété technique fait partie du
+        cahier des charges.
+      </p>
+    </div>
+    <div>
+      <h3>Tout effacer, des deux côtés</h3>
+      <p>
+        L'XP, les journées, les mots, les coffres et leur contenu : tout part
+        d'un geste, sans copie. <b>L'un comme l'autre</b> peut le faire, et ça ne
+        se rattrape pas.
+      </p>
+    </div>
+    <div>
+      <h3>Rien sur l'écran de veille</h3>
+      <p>
+        Aucune notification ne nomme ce qu'on est en train d'arrêter. Le
+        téléphone posé sur une table ne raconte rien à personne.
+      </p>
+    </div>
+    <div>
+      <h3>Sur l'écran d'accueil</h3>
+      <p>
+        L'application s'installe sans passer par un magasin — un bouton sur
+        Android et sur ordinateur, le geste expliqué sur iPhone, où c'est aussi
+        la seule façon d'avoir des notifications un jour.
+      </p>
+    </div>
+  </div>
+</section>
+
+<div class="p-large"><div class="p-rose"><i></i></div></div>
+
+<section class="p-large">
+  <p class="p-sur-titre">Douze rangs</p>
+  <h2>Du Mousse au Grand Cap</h2>
+  <p class="p-chapeau">
+    Le portrait change à chaque rang. C'est la seule chose que le joueur gagne
+    sans que personne n'ait rien à décider — les niveaux montent souvent, et ils
+    sont gratuits.
+  </p>
+
+  <div class="p-rangs">
+    <figure><img src="/avatars/rang-01.webp" alt="" width="192" height="192"><figcaption>Mousse<span>NIV. 1</span></figcaption></figure>
+    <figure><img src="/avatars/rang-02.webp" alt="" width="192" height="192"><figcaption>Matelot<span>NIV. 2</span></figcaption></figure>
+    <figure><img src="/avatars/rang-03.webp" alt="" width="192" height="192"><figcaption>Gabier<span>NIV. 3</span></figcaption></figure>
+    <figure><img src="/avatars/rang-04.webp" alt="" width="192" height="192"><figcaption>Timonier<span>NIV. 4</span></figcaption></figure>
+    <figure><img src="/avatars/rang-05.webp" alt="" width="192" height="192"><figcaption>Navigateur<span>NIV. 5</span></figcaption></figure>
+    <figure><img src="/avatars/rang-06.webp" alt="" width="192" height="192"><figcaption>Quartier-maître<span>NIV. 6</span></figcaption></figure>
+    <figure><img src="/avatars/rang-07.webp" alt="" width="192" height="192"><figcaption>Second<span>NIV. 7</span></figcaption></figure>
+    <figure><img src="/avatars/rang-08.webp" alt="" width="192" height="192"><figcaption>Capitaine<span>NIV. 8</span></figcaption></figure>
+    <figure><img src="/avatars/rang-09.webp" alt="" width="192" height="192"><figcaption>Cap-hornier<span>NIV. 9</span></figcaption></figure>
+    <figure><img src="/avatars/rang-10.webp" alt="" width="192" height="192"><figcaption>Doubleur de caps<span>NIV. 10</span></figcaption></figure>
+    <figure><img src="/avatars/rang-11.webp" alt="" width="192" height="192"><figcaption>Maître à bord<span>NIV. 11</span></figcaption></figure>
+    <figure><img src="/avatars/rang-12.webp" alt="" width="192" height="192"><figcaption>Grand Cap<span>NIV. 12</span></figcaption></figure>
+  </div>
+</section>
+
+<div class="p-large"><div class="p-rose"><i></i></div></div>
+
+<section class="p-large">
+  <p class="p-sur-titre">À dire franchement</p>
+  <h2>Ce que Le Cap n'est pas</h2>
+  <p class="p-chapeau">
+    Un jeu à deux, rien de plus. Pas un suivi médical, pas un diagnostic, aucune
+    promesse. L'application ne conseille rien et n'oriente vers rien — elle
+    donne les numéros, et elle le fait depuis ses propres réglages.
+  </p>
+  <p class="p-chapeau">
+    Si tu veux en parler à quelqu'un dont c'est le métier, quelle que soit
+    l'addiction : c'est gratuit, et personne ici n'en saura rien.
+  </p>
+
+  <div class="p-numeros">
+    <a class="p-numero" href="tel:0980980930">
+      <span class="p-nom">Alcool Info Service<span class="p-detail">7j/7 de 8h à 2h · anonyme, non surtaxé</span></span>
+      <span class="p-tel">0 980 980 930</span>
+    </a>
+    <a class="p-numero" href="tel:3989">
+      <span class="p-nom">Tabac Info Service<span class="p-detail">Arrêt du tabac</span></span>
+      <span class="p-tel">39 89</span>
+    </a>
+    <a class="p-numero" href="tel:0800231313">
+      <span class="p-nom">Drogues Info Service<span class="p-detail">7j/7</span></span>
+      <span class="p-tel">0 800 23 13 13</span>
+    </a>
+    <a class="p-numero" href="tel:0974751313">
+      <span class="p-nom">Joueurs Info Service<span class="p-detail">7j/7 · jeux d'argent</span></span>
+      <span class="p-tel">09 74 75 13 13</span>
+    </a>
+  </div>
+</section>
+
+<section class="p-large" style="padding-top:18px">
+  <div class="p-depart">
+    <p class="p-sur-titre">Commencer</p>
+    <h2 style="font-size:clamp(1.45rem,3.6vw,2rem)">Quatre minutes, à deux</h2>
+
+    <ol class="p-etapes">
+      <li><span><b>Celui qui garde le cap</b> ouvre la partie et reçoit un code de six caractères.</span></li>
+      <li><span>Le code passe à <b>celui qui tient la barre</b>, qui le saisit de son côté. Chacun donne son accord sur son propre appareil.</span></li>
+      <li><span>Le binôme règle les coffres et les remplit — cinq minutes, une fois pour toutes.</span></li>
+      <li><span>Le soir même, première journée déclarée. <b>Le niveau 2 tombe au premier XP.</b></span></li>
+    </ol>
+
+    <a class="p-adresse" href="/lecap/">Ouvrir Le Cap</a>
+  </div>
+</section>
+
+<footer class="p-pied">
+  Le Cap — un projet du studio doctox. Cette page est une présentation : les
+  journées, les coffres et les chiffres montrés ici sont des exemples.<br>
+  <a href="/lecap/legal/mentions-legales.html">Mentions légales</a> ·
+  <a href="/lecap/legal/confidentialite.html">Confidentialité</a>
+</footer>
+
+</div>
+
+<script type="module">
+  // Rien de l'application ne tourne ici : ces quelques lignes ne font que
+  // basculer des attributs sur un décor figé. Tout le contenu est déjà dans la
+  // page, donc elle reste lisible même si le script ne part jamais.
+
+  const legendes = {
+    cap: 'Côté joueur. Les coffres n’y sont jamais lisibles.',
+    barre: 'Côté binôme. Le seul écran autorisé à lire les récompenses.',
+  }
+  const legende = document.getElementById('legende')
+
+  /** Un groupe de boutons dont un seul est actif. */
+  function groupe(selecteur, attribut, appliquer) {
+    const boutons = [...document.querySelectorAll(selecteur)]
+    for (const b of boutons) {
+      b.addEventListener('click', () => {
+        for (const autre of boutons) autre.setAttribute(attribut, String(autre === b))
+        appliquer(b)
+      })
+    }
+  }
+
+  const vues = { cap: document.getElementById('vue-cap'), barre: document.getElementById('vue-barre') }
+  groupe('.p-bascule button[data-role]', 'aria-pressed', (b) => {
+    vues.cap.hidden = b.dataset.role !== 'cap'
+    vues.barre.hidden = b.dataset.role !== 'barre'
+    legende.textContent = legendes[b.dataset.role]
+  })
+
+  // Les trois onglets du joueur, et la boîte de dialogue qui suit.
+  const panneaux = {
+    jour: document.getElementById('p-jour'),
+    route: document.getElementById('p-route'),
+    journal: document.getElementById('p-journal'),
+  }
+  const bulles = {
+    jour: 'Alors, cette journée ? <b>Déclare-la</b> et empoche ton XP. Si tu as traversé quelque chose, coche la quête.',
+    route: 'Un coffre t’attend. <b>Ton binôme choisit le moment</b> — ça peut être ce soir, ça peut être dans trois jours.',
+    journal: 'Six jours d’affilée. Encore <b>2 XP</b> et tu passes niveau 5.',
+  }
+  const bulle = document.getElementById('bulle')
+
+  groupe('.onglets button[data-onglet]', 'aria-selected', (b) => {
+    for (const [cle, el] of Object.entries(panneaux)) el.hidden = cle !== b.dataset.onglet
+    bulle.innerHTML = `<p>${bulles[b.dataset.onglet]}</p>`
+  })
+
+  const sousJoueur = { quetes: document.getElementById('s-quetes'), mot: document.getElementById('s-mot') }
+  groupe('.onglets-fenetre button[data-sous]', 'aria-selected', (b) => {
+    for (const [cle, el] of Object.entries(sousJoueur)) el.hidden = cle !== b.dataset.sous
+  })
+
+  const sousBinome = { valider: document.getElementById('s-valider'), pouvoir: document.getElementById('s-pouvoir') }
+  groupe('.onglets-fenetre button[data-sousb]', 'aria-selected', (b) => {
+    for (const [cle, el] of Object.entries(sousBinome)) el.hidden = cle !== b.dataset.sousb
+  })
+
+  // Les quêtes se cochent. Le bouton CAP n'additionne PAS leurs points : il
+  // annonce +1 XP tout de suite, et le reste part à l'arbitrage. C'est la règle
+  // du jeu, et la montrer de travers serait pire que ne rien montrer.
+  const sousCap = document.getElementById('sous-cap')
+  const compteur = document.getElementById('compteur-quetes')
+  const cases = [...document.querySelectorAll('#s-quetes .case-quete')]
+
+  function majManette() {
+    const cochees = cases.filter((q) => q.dataset.cochee === 'true')
+    const enJeu = cochees.reduce((n, q) => n + Number(q.dataset.points), 0)
+    sousCap.textContent = enJeu > 0 ? `+1 XP · +${enJeu} à arbitrer` : '+1 XP'
+    compteur.textContent = String(cochees.length)
+    compteur.hidden = cochees.length === 0
+  }
+
+  for (const q of cases) {
+    q.addEventListener('click', () => {
+      q.dataset.cochee = q.dataset.cochee === 'true' ? 'false' : 'true'
+      majManette()
+    })
+  }
+  majManette()
+
+  // Le réglage des coffres. Les trois rythmes sont ceux de l'application, et le
+  // nombre de jours se calcule avec sa propre formule d'XP.
+  const PRESETS = {
+    mois: [2, 3, 4, 5, 6, 7, 8],
+    trimestre: [2, 4, 6, 8, 10, 12, 14],
+    an: [3, 5, 8, 11, 15, 20, 28],
+  }
+  const NOMS = [
+    'Première surprise', 'Deuxième surprise', 'Troisième surprise',
+    'Quatrième surprise', 'Cinquième surprise', 'Sixième surprise', 'Boss final',
+  ]
+  const xpPourNiveau = (n) => (n <= 1 ? 0 : Math.round(1.4 * ((n * (n - 1)) / 2)))
+  const jours = (n) => Math.max(1, xpPourNiveau(n))
+
+  const COFFRE_PRET =
+    '<svg width="26" height="26" viewBox="0 0 48 48" aria-hidden="true"><path d="M9 20a15 15 0 0 1 30 0v3H9z" fill="#5c4413" stroke="#e9b44c" stroke-width="2.4" stroke-linejoin="round"></path><rect x="9" y="20" width="30" height="4" rx="1" fill="#a86018"></rect><rect x="9" y="24" width="30" height="16" rx="2.5" fill="#5c4413" stroke="#e9b44c" stroke-width="2.4"></rect><rect x="9" y="29" width="30" height="3.5" fill="#a86018"></rect></svg>'
+
+  const hote = document.getElementById('lignes-coffres')
+  const resume = document.getElementById('resume-coffres')
+
+  function dessinerCoffres(niveaux) {
+    hote.innerHTML = niveaux
+      .map(
+        (n, i) => `
+        <div class="ligne-coffre">
+          <div class="ligne-coffre-haut">
+            ${COFFRE_PRET}
+            <input value="${NOMS[i]}" readonly aria-label="Nom du coffre ${i + 1}">
+            <button class="retirer" type="button" aria-label="Retirer">×</button>
+          </div>
+          <div class="ligne-coffre-bas">
+            <span class="faible">${xpPourNiveau(n)} XP · vers le jour ${jours(n)}</span>
+            <div class="reglage">
+              <button type="button" aria-label="Rapprocher">−</button>
+              <span class="valeur">niv. ${n}</span>
+              <button type="button" aria-label="Éloigner">+</button>
+            </div>
+          </div>
+        </div>`,
+      )
+      .join('')
+    resume.textContent = `${niveaux.length} coffres · dernier vers le jour ${jours(niveaux[niveaux.length - 1])}`
+  }
+
+  groupe('#presets button[data-preset]', 'aria-selected', (b) => dessinerCoffres(PRESETS[b.dataset.preset]))
+  dessinerCoffres(PRESETS.mois)
+</script>
+</body>
+</html>
